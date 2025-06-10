@@ -130,30 +130,35 @@ export const mockUsers = [
         password: "123456",
         role: "NhanVienCTSV",
         info: { MaNV: "NV001", HoTen: "Nguyễn Văn A", Quyen: "NhanVienCTSV" },
+        token: "123456",
     },
     {
         username: "khoa",
         password: "123456",
         role: "NhanVienKhoa",
         info: { MaNV: "NV002", HoTen: "Trần Thị B", Quyen: "NhanVienKhoa" },
+        token: "123456",
     },
     {
         username: "cvht",
         password: "123456",
         role: "GiangVien",
         info: { MaGV: "GV001", HoTen: "Lê Văn C", Quyen: "GiangVien" },
+        token: "123456",
     },
     {
         username: "bcs",
         password: "123456",
         role: "BanCanSu",
         info: { MaSV: "N22DCVT093", HoTen: "Hàng Gia Thịnh", Quyen: "BanCanSu" },
+        token: "123456",
     },
     {
         username: "sinhvien",
         password: "123456",
         role: "SinhVien",
         info: { MaSV: "N22DCVT076", HoTen: "Nguyễn Văn Quang", Quyen: "SinhVien" },
+        token: "123456",
     },
 
 

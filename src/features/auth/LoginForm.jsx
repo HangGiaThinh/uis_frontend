@@ -10,28 +10,31 @@ function LoginForm({ onLogin }) {
     const [error, setError] = useState("");
 
     const handleLogin = () => {
-        // Tìm người dùng trong mockUsers
-        const user = mockUsers.find(
-            (u) => u.username === username && u.password === password
-        );
+    const user = mockUsers.find(
+      (u) => u.username === username && u.password === password
+    );
+    if (user) {
+      // Lưu thông tin vào localStorage
+      localStorage.setItem("userInfo", JSON.stringify(user.info));
+      localStorage.setItem("role", user.role);
+      // Tạo token giả lập (thay bằng logic thực tế nếu có API)
+      const token = `mock-token-${user.username}`; // Ví dụ token
+      localStorage.setItem("token", token);
 
-        if (user) {
-            // Lưu thông tin vào localStorage
-            localStorage.setItem("userInfo", JSON.stringify(user.info));
-            localStorage.setItem("role", user.role);
+      // Gọi callback onLogin
+      if (onLogin) {
+        onLogin(user.info);
+      }
 
-            // Gọi callback onLogin (nếu có) để thông báo cho MainLayout
-            if (onLogin) {
-                onLogin(user.info);
-            }
-
-            // Điều hướng đến trang chính
-            setError("");
-            navigate("/profile");
-        } else {
-            setError("Tên đăng nhập hoặc mật khẩu không đúng");
-        }
-    };
+      setError("");
+      // Thêm timeout để đảm bảo localStorage được cập nhật
+      setTimeout(() => {
+        navigate("/profile");
+      }, 100);
+    } else {
+      setError("Tên đăng nhập hoặc mật khẩu không đúng");
+    }
+  };
 
     return (
         <div className="w-full max-w-xs mx-auto rounded-md shadow-lg mb-5">
