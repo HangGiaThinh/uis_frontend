@@ -1,0 +1,59 @@
+StartFragment
+[1] LOGIN ------------------- Server(username + password)
+[2] ✅ Server xác thực 
+🔐 Tạo Access token (ngắn hạn) 
+🔄 Tạo Refresh token (dài hạn) 
+💾 Lưu refresh token vào DB 
+🍪 Gửi refresh token trong cookie
+[3] Access token hết hạn 
+Client gọi GET /refresh-token
+[4] ✅ Server kiểm tra cookie 
+🔐 Decode token 
+🆚 So sánh DB
+[5] Nếu hợp lệ: 
+🔁 Tạo access token mới 
+🔄 Tạo refresh token mới 
+💾 Cập nhật DB 
+🍪 Gửi cookie mới 
+EndFragment
+
+http://localhost:8080/api/v1/auth/login
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Login",
+    "data": {
+        "access_token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJOMjJEQ1ZUMDkzIiwicm9sZSI6IkNMQVNTX0NPTU1JVFRFRSIsImV4cCI6MTc1ODIxNDc1NCwiaWF0IjoxNzQ5NTc0NzU0LCJ1c2VyIjp7InVzZXJJZCI6Ik4yMkRDVlQwOTMiLCJmdWxsTmFtZSI6IkjDoG5nIEdpYSBUaOG7i25oIiwiZW1haWwiOiJoZ3RAc3R1ZGVudC5wdGl0aGNtLmVkdS52biIsInJvbGVOYW1lIjoiQ0xBU1NfQ09NTUlUVEVFIiwicG9zaXRpb24iOiJM4bubcCB0csaw4bufbmcifX0.X4Q69CvLJ_h3tweG_9xZi6XirbVg75DzfNL1ECa5dBmncvUQWM0JRWamfVcztMTQzZgcKMoyRHz7dYiLFjbMUg",
+        "user_login": {
+            "user_id": "N22DCVT093",
+            "full_name": "Hàng Gia Thịnh",
+            "email": "hgt@student.ptithcm.edu.vn",
+            "role": "CLASS_COMMITTEE",
+            "position": "Lớp trưởng"
+        }
+    }
+}
+http://localhost:8080/api/v1/auth/logout
+http://localhost:8080/api/v1/auth/refresh-token
+{
+  "username": "NV001",
+  "password": "123"
+}
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Refresh token",
+    "data": {
+        "access_token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJOMjJEQ1ZUMDkzIiwicm9sZSI6IkNMQVNTX0NPTU1JVFRFRSIsImV4cCI6MTc1ODIxNTEyMywiaWF0IjoxNzQ5NTc1MTIzLCJ1c2VyIjp7InVzZXJJZCI6Ik4yMkRDVlQwOTMiLCJmdWxsTmFtZSI6IkjDoG5nIEdpYSBUaOG7i25oIiwiZW1haWwiOiJoZ3RAc3R1ZGVudC5wdGl0aGNtLmVkdS52biIsInJvbGVOYW1lIjoiQ0xBU1NfQ09NTUlUVEVFIiwicG9zaXRpb24iOiJM4bubcCB0csaw4bufbmcifX0.6cg70Cdt8kbJ_BzwYMqYtLGSraMFLkXeDbv5qxrT2NkYZSTPTeT8iwfDZO51ATovOeAiSgtKdEfJwZCass9ovQ",
+        "user_login": {
+            "user_id": "N22DCVT093",
+            "full_name": "Hàng Gia Thịnh",
+            "email": "hgt@student.ptithcm.edu.vn",
+            "role": "CLASS_COMMITTEE",
+            "position": "Lớp trưởng"
+        }
+    }
+}

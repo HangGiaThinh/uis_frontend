@@ -1,37 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
-function UserInfoPanel({ onLogout }) {
+function UserInfoPanel() {
     const navigate = useNavigate();
+    const { user: authUser, role, position, logout } = useAuth();
     const [user, setUser] = useState(null);
     const [isExpanded, setIsExpanded] = useState(false); // Trạng thái toggle
 
     useEffect(() => {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        if (userInfo) {
-            // Tách HoTen thành Ho và Ten
-            const [ho, ...tenArray] = userInfo.HoTen.split(' ');
-            const ten = tenArray.join(' ');
-            const mockUser = {
-                MaSV: userInfo.MaSV,
-                Ho: ho,
-                Ten: ten,
-                EmailTruong: userInfo.EmailTruong || 'Không có email',
-                Lop: 'E22CQCN2-N', // Thêm thông tin mở rộng (mock)
-                Nganh: 'Công nghệ thông tin',
-                Khoa: 'Đại học Chính quy',
-                NamNhapHoc: '2022-2027',
+        // Lấy thông tin người dùng từ context
+        if (authUser) {
+            const userInfo = {
+                userId: authUser.user_id || '',
+                fullName: authUser.full_name || '',
+                email: authUser.email || 'Không có email',
+                role: role || '',
+                position: position || '',
             };
-            setUser(mockUser);
+            setUser(userInfo);
         }
-    }, []);
+    }, [authUser, role, position]);
 
     const handleLogout = () => {
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('role');
-        if (onLogout) onLogout();
-        navigate('/');
+        logout(); // Sử dụng hàm logout từ AuthContext
     };
 
     const toggleExpand = () => {
@@ -39,6 +32,14 @@ function UserInfoPanel({ onLogout }) {
     };
 
     if (!user) return <div>Loading...</div>;
+
+    // Tạo chuỗi hiển thị vai trò
+    const roleDisplay = user.role === 'STUDENT' ? 'Sinh viên' : user.role === 'ACADEMIC_ADVISOR' ? 'Cố vấn học tập' : user.role === 'CLASS_COMMITTEE' ? 'Ban cán sự lớp' : user.role === 'EMPLOYEE_FACULTY' ? 'Nhân viên khoa' : user.role === 'EMPLOYEE_DEPARTMENT' ? 'Nhân viên phòng ban' : user.role;
+    const positionDisplay = user.position ? user.position : '';
+    let rolePositionDisplay = roleDisplay;
+    if (positionDisplay) {
+        rolePositionDisplay = roleDisplay +` - ${positionDisplay}`;
+    }
 
     return (
         <div className="rounded shadow-md bg-white overflow-hidden text-sm text-gray-700">
@@ -51,47 +52,31 @@ function UserInfoPanel({ onLogout }) {
                 </div>
             </div>
 
+            {isExpanded && (
             <div className="p-3">
                 <div className="flex justify-between mb-1">
                     <span className="text-[#00AEEF]">Tài khoản</span>
-                    <span className="font-semibold text-[#00AEEF]">{user.MaSV}</span>
+                    <span className="font-semibold text-[#00AEEF]">{user.userId}</span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-[#00AEEF]">Họ tên</span>
-                    <span className="font-semibold text-[#00AEEF]">{user.Ho} {user.Ten}</span>
+                    <span className="font-semibold text-[#00AEEF]">{user.fullName}</span>
                 </div>
-
-                {/* Thông tin mở rộng */}
-                {isExpanded && (
-                    <div className="mt-3 space-y-1">
-                        <div className="flex justify-between">
-                            <span className="text-[#00AEEF]">Email</span>
-                            <span className="font-semibold text-[#00AEEF]">{user.EmailTruong}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-[#00AEEF]">Lớp</span>
-                            <span className="font-semibold text-[#00AEEF]">{user.Lop}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-[#00AEEF]">Ngành</span>
-                            <span className="font-semibold text-[#00AEEF]">{user.Nganh}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-[#00AEEF]">Hệ đào tạo</span>
-                            <span className="font-semibold text-[#00AEEF]">{user.Khoa}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-[#00AEEF]">Niên khóa</span>
-                            <span className="font-semibold text-[#00AEEF]">{user.NamNhapHoc}</span>
-                        </div>
-                    </div>
-                )}
+                <div className="flex justify-between">
+                    <span className="text-[#00AEEF]">Email</span>
+                    <span className="font-semibold text-[#00AEEF]">{user.email}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-[#00AEEF]">Vai trò</span>
+                    <span className="font-semibold text-[#00AEEF]">{rolePositionDisplay}</span>
+                </div>
             </div>
+            )}
 
             <div className="flex justify-center my-3">
                 <button
                     onClick={handleLogout}
-                    className="bg-orange-500 hover:bg-orange-600 text-white py-1.5 px-20 rounded text-sm font-semibold text-[#00AEEF] flex items-center gap-2"
+                    className="bg-orange-500 hover:bg-orange-600 text-white py-1.5 px-20 rounded text-sm font-semibold flex items-center gap-2"
                 >
                     <LogOut size={16} /> Đăng xuất
                 </button>

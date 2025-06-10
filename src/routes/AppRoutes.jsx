@@ -8,52 +8,55 @@ import ScoreList from '../features/score/ScoreList';
 import ComplaintList from '../features/complaint/ComplaintList';
 import NotificationList from '../features/notification/NotificationList';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { AuthProvider } from '../context/AuthContext';
 
 function AppRoutes() {
     return (
         <BrowserRouter>
-            <Routes>
-                <Route element={<MainLayout />}>
-                    <Route path="/" element={<NotificationPanel />} />
-                    <Route path="/dashboard" element={<NotificationPanel />} />
-                    <Route
-                        path="/profile"
-                        element={<ProtectedRoute allowedRoles={['SinhVien', 'BanCanSu', 'GiangVien']} />}
-                    >
-                        <Route path="" element={<UserProfile />} />
+            <AuthProvider>
+                <Routes>
+                    <Route element={<MainLayout />}>
+                        <Route path="/" element={<NotificationPanel />} />
+                        <Route path="/dashboard" element={<NotificationPanel />} />
+                        <Route
+                            path="/profile"
+                            element={<ProtectedRoute allowedRoles={['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT']} />}
+                        >
+                            <Route path="" element={<UserProfile />} />
+                        </Route>
+                        <Route
+                            path="/user"
+                            element={<ProtectedRoute allowedRoles={['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT']} />}
+                        >
+                            <Route path="" element={<UserInfoPanel />} />
+                        </Route>
+                        <Route
+                            path="/students"
+                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY']} />}
+                        >
+                            <Route path="" element={<StudentList />} />
+                        </Route>
+                        <Route
+                            path="/scores"
+                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY', 'LECTURER']} />}
+                        >
+                            <Route path="" element={<ScoreList />} />
+                        </Route>
+                        <Route
+                            path="/complaints"
+                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT']} />}
+                        >
+                            <Route path="" element={<ComplaintList />} />
+                        </Route>
+                        <Route
+                            path="/notifications"
+                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY', 'LECTURER', 'STUDENT']} />}
+                        >
+                            <Route path="" element={<NotificationList />} />
+                        </Route>
                     </Route>
-                    <Route
-                        path="/user"
-                        element={<ProtectedRoute allowedRoles={['SinhVien', 'BanCanSu', 'GiangVien']} />}
-                    >
-                        <Route path="" element={<UserInfoPanel />} />
-                    </Route>
-                    <Route
-                        path="/students"
-                        element={<ProtectedRoute allowedRoles={['NhanVienCTSV', 'NhanVienKhoa']} />}
-                    >
-                        <Route path="" element={<StudentList />} />
-                    </Route>
-                    <Route
-                        path="/scores"
-                        element={<ProtectedRoute allowedRoles={['NhanVienCTSV', 'NhanVienKhoa', 'GiangVien', 'BanCanSu']} />}
-                    >
-                        <Route path="" element={<ScoreList />} />
-                    </Route>
-                    <Route
-                        path="/complaints"
-                        element={<ProtectedRoute allowedRoles={['NhanVienCTSV']} />}
-                    >
-                        <Route path="" element={<ComplaintList />} />
-                    </Route>
-                    <Route
-                        path="/notifications"
-                        element={<ProtectedRoute allowedRoles={['NhanVienCTSV', 'NhanVienKhoa', 'GiangVien', 'SinhVien', 'BanCanSu']} />}
-                    >
-                        <Route path="" element={<NotificationList />} />
-                    </Route>
-                </Route>
-            </Routes>
+                </Routes>
+            </AuthProvider>
         </BrowserRouter>
     );
 }

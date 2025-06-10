@@ -1,7 +1,8 @@
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 function Sidebar() {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const { isAuthenticated } = useAuth();
 
     const features = [
         'Thông báo tới ban quản trị',
@@ -18,7 +19,9 @@ function Sidebar() {
         'Cập nhật thông tin trường...',
         'Gửi kiến ban quản trị',
     ];
-    if (!userInfo) return null;
+
+    if (!isAuthenticated) return null;
+    
     return (
         <aside className="bg-white text-[#00AEEF] p-4 shadow-md rounded-md w-full">
             <h2 className="text-lg font-semibold text-[#00AEEF] mb-3 border-b pb-1">TÍNH NĂNG</h2>

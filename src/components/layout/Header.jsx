@@ -1,55 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Home, User, Menu } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 function Header() {
-    const navigate = useNavigate();
-    const [userInfo, setUserInfo] = useState(null);
-
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('userInfo'));
-        if (user) {
-            setUserInfo(user);
-        }
-    }, []);
-
-    const handleLogout = () => {
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('role');
-        navigate('/'); // Điều hướng lại để hiển thị form đăng nhập
-    };
+    const { isAuthenticated, user} = useAuth();
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
     return (
-        <header className="bg-[#00AEEF] text-white p-2 flex justify-between items-center mb-5">
-            <div className="space-x-4">
-                <a href="/" className="hover:underline">Trang chủ</a>
-                <a href="/profile" className="hover:underline">Thông tin</a>
-            </div>
+        <header className="bg-[#00AEEF] text-white shadow-md">
+            <div className="container mx-auto px-4 py-3">
+                <div className="flex justify-between items-center">
+                    {/* Logo / Brand */}
+                    <div className="flex items-center">
+                        <span className="font-bold text-xl mr-2">HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</span>
+                    </div>
 
-            {userInfo && (
-                <div className="flex items-center space-x-2">
-                    <span>Thông tin</span>
-                    <div className="dropdown dropdown-end">
-                        <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                            <div className="w-10 rounded-full">
-                                <img src="/default-avatar.png" alt="User Avatar" />
-                            </div>
-                        </label>
-                        <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
-                            <li>
-                                <span>Tài khoản: {userInfo.MaSV}</span>
-                            </li>
-                            <li>
-                                <span>Họ tên: {userInfo.Ho} {userInfo.Ten}</span>
-                            </li>
-                            <li>
-                                <a onClick={handleLogout} className="text-orange-500 hover:text-orange-600">
-                                    Đăng xuất
-                                </a>
-                            </li>
-                        </ul>
+                    {/* Navigation - Desktop */}
+                    <nav className="hidden md:flex items-center space-x-6">
+                        <Link 
+                            to="/" 
+                            className="flex items-center gap-1.5 py-1 px-2 rounded-md transition-all duration-200 hover:bg-white/20"
+                        >
+                            <Home size={18} />
+                            <span>Trang chủ</span>
+                        </Link>
+                        
+                        {isAuthenticated && (
+                            <Link 
+                                to="/profile" 
+                                className="flex items-center gap-1.5 py-1 px-2 rounded-md transition-all duration-200 hover:bg-white/20"
+                            >
+                                <User size={18} />
+                                <span>Thông tin</span>
+                            </Link>
+                        )}
+                    </nav>
+
+                    {/* Mobile Menu Button */}
+                    <div className="md:hidden">
+                        <button 
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="p-1.5 rounded-md hover:bg-white/20 transition-colors"
+                        >
+                            <Menu size={22} />
+                        </button>
                     </div>
                 </div>
-            )}
+
+                {/* Mobile Menu */}
+                {isMenuOpen && (
+                    <div className="md:hidden mt-2 pb-2 space-y-2">
+                        <Link 
+                            to="/" 
+                            className="flex items-center gap-2 p-2 rounded-md hover:bg-white/20 transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            <Home size={18} />
+                            <span>Trang chủ</span>
+                        </Link>
+                        
+                        {isAuthenticated && (
+                            <Link 
+                                to="/profile" 
+                                className="flex items-center gap-2 p-2 rounded-md hover:bg-white/20 transition-colors"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                <User size={18} />
+                                <span>Thông tin</span>
+                            </Link>
+                        )}
+
+                    </div>
+                )}
+            </div>
         </header>
     );
 }
