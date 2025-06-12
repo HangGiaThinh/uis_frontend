@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import authApi from '../services/authApi';
+import { fetchUserProfile } from '../services/userService'; // Thêm import này
 
 // Tạo context cho authentication
 const AuthContext = createContext();
@@ -11,9 +12,22 @@ export const useAuth = () => useContext(AuthContext);
 // Các role được chuyển hướng đến /profile
 const PROFILE_REDIRECT_ROLES = ['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'];
 
+// Route và phân quyền tương ứng
+const routePermissions = {
+  '/profile': ['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
+  '/user': ['EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
+  '/students': ['EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
+  '/scores': ['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
+  '/scores:id': ['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
+  '/complaints': ['EMPLOYEE_DEPARTMENT'],
+  '/notifications': ['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
+  '/dashboard': ['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
+};
+
 // Provider component
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [position, setPosition] = useState(null);
@@ -24,24 +38,24 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Kiểm tra xem có token trong localStorage không
         const token = localStorage.getItem('token');
         if (!token) {
           setLoading(false);
           return;
         }
 
-        // Lấy thông tin user từ localStorage
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-        const userRole = localStorage.getItem('role');
-        const userPosition = localStorage.getItem('position');
-
-        if (userInfo && userRole) {
+        const userProfile = await fetchUserProfile(); // Gọi fetchUserProfile
+        if (userProfile && userProfile.data) {
+          const userInfo = userProfile.data;
+          const userRole = userInfo.studentAccount ? 'STUDENT' : null; // Xác định role
+          const userPosition = null; // Có thể điều chỉnh nếu có trường position
+          localStorage.setItem('userInfo', JSON.stringify(userInfo));
+          localStorage.setItem('role', userRole);
+          localStorage.setItem('position', userPosition || '');
           setUser(userInfo);
           setRole(userRole);
           setPosition(userPosition || '');
         } else {
-          // Nếu không có thông tin user, xóa dữ liệu
           handleLogout(false);
         }
       } catch (err) {
@@ -55,45 +69,51 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  // Kiểm tra và điều hướng dựa trên quyền khi route thay đổi
+  useEffect(() => {
+    if (!loading && role) {
+      const currentPath = location.pathname;
+      const allowedRoles = routePermissions[currentPath] || [];
+      if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+        navigate('/'); // Nếu role không có quyền, quay về /
+      }
+    }
+  }, [loading, role, location.pathname, navigate]);
+
   // Xử lý đăng nhập
   const handleLogin = async (username, password) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await authApi.login(username, password);
-      
       if (response && response.data && response.data.access_token) {
-        // Lưu token
         localStorage.setItem('token', response.data.access_token);
-        
-        // Lưu thời gian đăng nhập
         localStorage.setItem('loginTimestamp', Date.now().toString());
-        
-        // Lưu thông tin user
         const userInfo = response.data.user_login;
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        
-        // Lưu role và position
         const userRole = userInfo.role;
         const userPosition = userInfo.position || '';
-        
         localStorage.setItem('role', userRole);
         localStorage.setItem('position', userPosition);
-        
+
         setUser(userInfo);
         setRole(userRole);
         setPosition(userPosition);
-        
+
         return { success: true, user: userInfo, role: userRole };
       } else {
-        throw new Error('Đăng nhập không thành công');
+        throw new Error('Đăng nhập không thành công: Phản hồi không hợp lệ');
       }
     } catch (err) {
       console.error('Lỗi đăng nhập:', err);
-      
-      let errorMessage = 'Vui lòng kiểm tra tên đăng nhập hoặc mật khẩu';
-      
+      // Log detailed server response if available
+      if (err.response) {
+        console.error('Server response:', err.response.data);
+        console.error('Status:', err.response.status);
+        console.error('Headers:', err.response.headers);
+      }
+      let errorMessage = err.response?.data?.message || 'Vui lòng kiểm tra tên đăng nhập hoặc mật khẩu';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -104,29 +124,25 @@ export const AuthProvider = ({ children }) => {
   // Xử lý đăng xuất
   const handleLogout = async (callApi = true) => {
     setLoading(true);
-    
+
     try {
-      // Gọi API đăng xuất nếu cần
       if (callApi) {
         await authApi.logout();
       }
     } catch (err) {
       console.error('Lỗi đăng xuất:', err);
     } finally {
-      // Xóa dữ liệu khỏi localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('userInfo');
       localStorage.removeItem('role');
       localStorage.removeItem('position');
       localStorage.removeItem('loginTimestamp');
-      
-      // Reset state
+
       setUser(null);
       setRole(null);
       setPosition(null);
       setLoading(false);
-      
-      // Chuyển hướng về trang chính
+
       navigate('/');
     }
   };
@@ -135,7 +151,6 @@ export const AuthProvider = ({ children }) => {
   const checkPermission = (requiredRoles) => {
     if (!requiredRoles || requiredRoles.length === 0) return true;
     if (!role) return false;
-    
     return requiredRoles.includes(role);
   };
 

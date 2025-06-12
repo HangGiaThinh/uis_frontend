@@ -13,8 +13,6 @@ const authApi = {
   login: async (username, password) => {
     try {
       const response = await api.post('/v1/auth/login', { username, password });
-      // API sẽ trả về dữ liệu với định dạng:
-      // { status_code, error, details, message, data: { access_token, user_login } }
       return response.data;
     } catch (error) {
       throw error;
@@ -50,3 +48,4 @@ const authApi = {
 };
 
 export default authApi;
+export { api }; // Xuất api để các file khác sử dụng

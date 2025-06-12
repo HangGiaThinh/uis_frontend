@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getScores } from '../../services/scoreApi'
+import { getScores } from '../../../services/scoreApi'
 
 function ScoreList() {
     const { data: scores, isLoading, error } = useQuery({

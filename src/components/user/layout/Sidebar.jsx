@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 
 function Sidebar() {
     const { isAuthenticated } = useAuth();
@@ -21,7 +21,7 @@ function Sidebar() {
     ];
 
     if (!isAuthenticated) return null;
-    
+
     return (
         <aside className="bg-white text-[#00AEEF] p-4 shadow-md rounded-md w-full">
             <h2 className="text-lg font-semibold text-[#00AEEF] mb-3 border-b pb-1">TÍNH NĂNG</h2>
