@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
-import { getTrainingScoreDetail, submitTrainingScore } from '../services/scoreService';
+import { getTrainingScoreDetail, submitTrainingScore } from "../../services/score/scoreService";
 import { useForm } from 'react-hook-form';
 import { useState, useEffect } from 'react';
 

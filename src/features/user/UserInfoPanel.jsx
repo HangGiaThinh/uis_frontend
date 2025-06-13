@@ -38,7 +38,7 @@ function UserInfoPanel() {
     const positionDisplay = user.position ? user.position : '';
     let rolePositionDisplay = roleDisplay;
     if (positionDisplay) {
-        rolePositionDisplay = roleDisplay +` - ${positionDisplay}`;
+        rolePositionDisplay = roleDisplay + ` - ${positionDisplay}`;
     }
 
     return (
@@ -53,24 +53,24 @@ function UserInfoPanel() {
             </div>
 
             {isExpanded && (
-            <div className="p-3">
-                <div className="flex justify-between mb-1">
-                    <span className="text-[#00AEEF]">Tài khoản</span>
-                    <span className="font-semibold text-[#00AEEF]">{user.userId}</span>
+                <div className="p-3">
+                    <div className="flex justify-between mb-1">
+                        <span className="text-[#00AEEF]">Tài khoản</span>
+                        <span className="font-semibold text-[#00AEEF]">{user.userId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-[#00AEEF]">Họ tên</span>
+                        <span className="font-semibold text-[#00AEEF]">{user.fullName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-[#00AEEF]">Email</span>
+                        <span className="font-semibold text-[#00AEEF]">{user.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-[#00AEEF]">Vai trò</span>
+                        <span className="font-semibold text-[#00AEEF]">{rolePositionDisplay}</span>
+                    </div>
                 </div>
-                <div className="flex justify-between">
-                    <span className="text-[#00AEEF]">Họ tên</span>
-                    <span className="font-semibold text-[#00AEEF]">{user.fullName}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-[#00AEEF]">Email</span>
-                    <span className="font-semibold text-[#00AEEF]">{user.email}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-[#00AEEF]">Vai trò</span>
-                    <span className="font-semibold text-[#00AEEF]">{rolePositionDisplay}</span>
-                </div>
-            </div>
             )}
 
             <div className="flex justify-center my-3">

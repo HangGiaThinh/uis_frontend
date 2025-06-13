@@ -1,183 +1,105 @@
-import { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import authApi from '../services/authApi';
-import { fetchUserProfile } from '../services/userService'; // Thêm import này
+// src/features/auth/AuthContext.jsx
+import { useState, useEffect, useContext, createContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { login, logout, fetchUserProfile } from "../features/auth/services/authApi";
+import { isTokenExpired, updateLoginTimestamp } from "../features/auth/services/tokenUtils";
 
-// Tạo context cho authentication
 const AuthContext = createContext();
 
-// Hook để sử dụng AuthContext
 export const useAuth = () => useContext(AuthContext);
 
-// Các role được chuyển hướng đến /profile
-const PROFILE_REDIRECT_ROLES = ['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'];
-
-// Route và phân quyền tương ứng
-const routePermissions = {
-  '/profile': ['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
-  '/user': ['EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
-  '/students': ['EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
-  '/scores': ['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
-  '/scores:id': ['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
-  '/complaints': ['EMPLOYEE_DEPARTMENT'],
-  '/notifications': ['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
-  '/dashboard': ['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT'],
-};
-
-// Provider component
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
-  const [position, setPosition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Kiểm tra trạng thái đăng nhập khi component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setLoading(false);
+        const token = localStorage.getItem("token");
+        if (token && isTokenExpired()) {
+          await logout();
+          localStorage.removeItem("token");
           return;
         }
-
-        const userProfile = await fetchUserProfile(); // Gọi fetchUserProfile
-        if (userProfile && userProfile.data) {
-          const userInfo = userProfile.data;
-          const userRole = userInfo.studentAccount ? 'STUDENT' : null; // Xác định role
-          const userPosition = null; // Có thể điều chỉnh nếu có trường position
-          localStorage.setItem('userInfo', JSON.stringify(userInfo));
-          localStorage.setItem('role', userRole);
-          localStorage.setItem('position', userPosition || '');
-          setUser(userInfo);
-          setRole(userRole);
-          setPosition(userPosition || '');
-        } else {
-          handleLogout(false);
+        if (token) {
+          const userProfile = await fetchUserProfile(token);
+          console.log("User profile:", userProfile);
+          if (!userProfile?.user_login || !userProfile.user_login.role) {
+            throw new Error("Dữ liệu hồ sơ người dùng không hợp lệ");
+          }
+          setUser(userProfile.user_login);
+          setRole(userProfile.user_login.role);
         }
       } catch (err) {
-        console.error('Lỗi kiểm tra trạng thái đăng nhập:', err);
-        setError('Không thể xác thực. Vui lòng đăng nhập lại.');
+        console.error("Kiểm tra xác thực thất bại:", err.message);
+        setError("Không thể tải thông tin người dùng");
+        localStorage.removeItem("token");
       } finally {
         setLoading(false);
       }
     };
-
     checkAuthStatus();
   }, []);
 
-  // Kiểm tra và điều hướng dựa trên quyền khi route thay đổi
-  useEffect(() => {
-    if (!loading && role) {
-      const currentPath = location.pathname;
-      const allowedRoles = routePermissions[currentPath] || [];
-      if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-        navigate('/'); // Nếu role không có quyền, quay về /
-      }
-    }
-  }, [loading, role, location.pathname, navigate]);
-
-  // Xử lý đăng nhập
   const handleLogin = async (username, password) => {
     setLoading(true);
     setError(null);
-
     try {
-      const response = await authApi.login(username, password);
-      if (response && response.data && response.data.access_token) {
-        localStorage.setItem('token', response.data.access_token);
-        localStorage.setItem('loginTimestamp', Date.now().toString());
-        const userInfo = response.data.user_login;
-        localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        const userRole = userInfo.role;
-        const userPosition = userInfo.position || '';
-        localStorage.setItem('role', userRole);
-        localStorage.setItem('position', userPosition);
-
-        setUser(userInfo);
-        setRole(userRole);
-        setPosition(userPosition);
-
-        return { success: true, user: userInfo, role: userRole };
+      console.log("Đang thử đăng nhập với:", { username, password });
+      const response = await login(username, password);
+      console.log("Full login response:", JSON.stringify(response, null, 2));
+      if (response?.data?.access_token) {
+        if (!response.data.user_login || !response.data.user_login.role) {
+          throw new Error("Dữ liệu người dùng hoặc vai trò không hợp lệ");
+        }
+        localStorage.setItem("token", response.data.access_token);
+        updateLoginTimestamp();
+        setUser(response.data.user_login);
+        setRole(response.data.user_login.role);
+        return { success: true, role: response.data.user_login.role };
       } else {
-        throw new Error('Đăng nhập không thành công: Phản hồi không hợp lệ');
+        throw new Error("Không nhận được token đăng nhập");
       }
     } catch (err) {
-      console.error('Lỗi đăng nhập:', err);
-      // Log detailed server response if available
-      if (err.response) {
-        console.error('Server response:', err.response.data);
-        console.error('Status:', err.response.status);
-        console.error('Headers:', err.response.headers);
-      }
-      let errorMessage = err.response?.data?.message || 'Vui lòng kiểm tra tên đăng nhập hoặc mật khẩu';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
+      console.error("Đăng nhập thất bại:", err.response?.data || err.message);
+      const errorMsg = err.response?.data?.message || "Đăng nhập thất bại, vui lòng thử lại";
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } finally {
       setLoading(false);
     }
   };
 
-  // Xử lý đăng xuất
-  const handleLogout = async (callApi = true) => {
+  const handleLogout = async () => {
     setLoading(true);
-
     try {
-      if (callApi) {
-        await authApi.logout();
-      }
-    } catch (err) {
-      console.error('Lỗi đăng xuất:', err);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userInfo');
-      localStorage.removeItem('role');
-      localStorage.removeItem('position');
-      localStorage.removeItem('loginTimestamp');
-
+      await logout();
       setUser(null);
       setRole(null);
-      setPosition(null);
+      localStorage.removeItem("token");
+      navigate("/");
+    } catch (err) {
+      console.error("Đăng xuất thất bại:", err);
+    } finally {
       setLoading(false);
-
-      navigate('/');
     }
   };
 
-  // Kiểm tra xem người dùng có quyền truy cập không
-  const checkPermission = (requiredRoles) => {
-    if (!requiredRoles || requiredRoles.length === 0) return true;
-    if (!role) return false;
-    return requiredRoles.includes(role);
-  };
+  const checkPermission = (requiredRoles) => requiredRoles.includes(role);
 
-  // Kiểm tra xem role hiện tại có nên chuyển hướng đến /profile không
-  const shouldRedirectToProfile = () => {
-    return PROFILE_REDIRECT_ROLES.includes(role);
-  };
-
-  // Giá trị được cung cấp cho context
   const value = {
     user,
     role,
-    position,
     loading,
     error,
     isAuthenticated: !!user,
     login: handleLogin,
     logout: handleLogout,
     checkPermission,
-    shouldRedirectToProfile,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-export default AuthContext;

@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
-import LoginForm from '../../../features/auth/LoginForm';
+import LoginPage from '../../../features/auth/pages/LoginPage';
 import UserInfoPanel from '../../../features/user/UserInfoPanel';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -33,7 +33,7 @@ function MainLayout() {
                                 </div>
                             </>
                         ) : (
-                            <LoginForm />
+                            <LoginPage />
                         )}
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getTrainingScores } from '../services/scoreService';
+import { getTrainingScores } from '../../services/score/scoreService';
 import { Link } from 'react-router-dom';
 
 function ScorePage() {
