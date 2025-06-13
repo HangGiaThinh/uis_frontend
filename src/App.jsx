@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from './components/user/layout/MainLayout'
-import HomePage from './features/HomePage';
+import HomePage from './features/user/pages/HomePage';
 import StudentProfilePage from './features/student/pages/profile/StudentProfilePage';
 import UserInfoPanel from './features/user/UserInfoPanel';
 import ScorePage from './features/student/pages/score/ScorePage';

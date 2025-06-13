@@ -1,7 +1,6 @@
-// src/features/student/components/StudentProfileLoader.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../../context/AuthContext";
-import api from "../../../../services/api";
+import { fetchUserProfile } from "../../../auth/services/authApi";
 
 function StudentProfileLoader({ children }) {
     const { isAuthenticated, user } = useAuth();
@@ -18,21 +17,13 @@ function StudentProfileLoader({ children }) {
             }
 
             try {
-                const token = localStorage.getItem("token");
-                const response = await api.get("/api/v1/student/profile", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log("API Response:", response.data); // Thêm log để debug
-                if (response.data.status_code === 200) {
-                    setProfile(response.data.data);
-                } else {
-                    setError("Không thể tải thông tin sinh viên.");
-                }
+                const data = await fetchUserProfile();
+                console.log("✅ Profile response:", data);
+                setProfile(data);
             } catch (err) {
-                console.error("API Error:", err.response?.data || err.message); // Log chi tiết lỗi
-                setError("Lỗi khi tải thông tin: " + (err.response?.data?.message || err.message));
+                console.error("❌ Lỗi khi gọi API:", err);
+                const message = err.response?.data?.message || err.message || "Lỗi kết nối đến máy chủ.";
+                setError(`Lỗi khi tải thông tin: ${message}`);
             } finally {
                 setLoading(false);
             }
@@ -41,7 +32,7 @@ function StudentProfileLoader({ children }) {
         fetchProfile();
     }, [isAuthenticated, user]);
 
-    if (loading) return <div className="text-center p-4">Đang tải...</div>;
+    if (loading) return <div className="text-center p-4">Đang tải thông tin sinh viên...</div>;
     if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
 
     return children({ profile });

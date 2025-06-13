@@ -1,128 +1,105 @@
-// src/services/api.js
 import axios from "axios";
+import { isTokenExpired, updateLoginTimestamp } from "../features/auth/services/tokenUtils";
 
 const api = axios.create({
-    baseURL: "http://localhost:8080/api", // Đảm bảo đúng với cấu hình backend
+    baseURL: "http://localhost:8080/api",
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
 });
-
-api.interceptors.request.use(
-    (config) => {
-        console.log("Request config:", config); // Log để debug
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Lưu thời gian đăng nhập
-let loginTimestamp = null;
-const TOKEN_EXPIRATION_TIME = 30 * 60 * 1000; // 30 phút
-
-const isTokenExpired = () => {
-    if (!loginTimestamp) {
-        const savedTimestamp = localStorage.getItem("loginTimestamp");
-        if (savedTimestamp) {
-            loginTimestamp = parseInt(savedTimestamp, 10);
-        } else {
-            return false;
-        }
-    }
-    const currentTime = Date.now();
-    return currentTime - loginTimestamp > TOKEN_EXPIRATION_TIME;
-};
-
-const updateLoginTimestamp = () => {
-    loginTimestamp = Date.now();
-    localStorage.setItem("loginTimestamp", loginTimestamp.toString());
-};
 
 let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
     failedQueue.forEach((prom) => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
+        if (error) prom.reject(error);
+        else prom.resolve(token);
     });
     failedQueue = [];
 };
 
 api.interceptors.request.use(
     async (config) => {
-        const token = localStorage.getItem("token");
+        console.log("Request config:", {
+            url: config.url,
+            method: config.method,
+            headers: config.headers,
+            data: config.data,
+        });
 
-        if (token && isTokenExpired() && !config.url.includes("/auth/refresh-token")) {
-            if (!isRefreshing) {
-                isRefreshing = true;
-                try {
-                    const response = await axios.get("/v1/auth/refresh-token", {
-                        baseURL: "http://localhost:8080/api", // Đảm bảo baseURL khớp
-                        withCredentials: true,
-                    });
-                    if (response.data && response.data.data && response.data.data.access_token) {
-                        const newToken = response.data.data.access_token;
+        const token = localStorage.getItem("token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+
+            if (isTokenExpired() && !config.url.includes("/auth/refresh-token")) {
+                if (!isRefreshing) {
+                    isRefreshing = true;
+                    try {
+                        const response = await axios.get("/v1/auth/refresh-token", {
+                            baseURL: "http://localhost:8080/api",
+                            withCredentials: true,
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+
+                        const newToken = response.data?.data?.access_token;
+                        if (!newToken) throw new Error("Không nhận được token mới");
+
                         localStorage.setItem("token", newToken);
                         updateLoginTimestamp();
                         config.headers.Authorization = `Bearer ${newToken}`;
-                    } else {
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("userInfo");
-                        localStorage.removeItem("role");
-                        localStorage.removeItem("loginTimestamp");
-                        window.location.href = "/";
+                        processQueue(null, newToken);
+                    } catch (error) {
+                        console.error("Lỗi làm mới token:", {
+                            message: error.message,
+                            response: error.response?.data,
+                            status: error.response?.status,
+                        });
+                        processQueue(error);
+                        return Promise.reject(error);
+                    } finally {
+                        isRefreshing = false;
                     }
-                } catch (error) {
-                    console.error("Refresh token error:", error);
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("userInfo");
-                    localStorage.removeItem("role");
-                    localStorage.removeItem("loginTimestamp");
-                    window.location.href = "/";
-                } finally {
-                    isRefreshing = false;
-                    processQueue(null, localStorage.getItem("token"));
                 }
+
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({
+                        resolve: (token) => {
+                            config.headers.Authorization = `Bearer ${token}`;
+                            resolve(config);
+                        },
+                        reject,
+                    });
+                });
             }
-            const retryProm = new Promise((resolve, reject) => {
-                failedQueue.push({ resolve, reject });
-            });
-            retryProm.then((token) => {
-                config.headers.Authorization = `Bearer ${token}`;
-            }).catch((err) => {
-                throw err;
-            });
-            return retryProm;
+        } else {
+            console.warn("Không tìm thấy token trong localStorage");
         }
 
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        console.error("Lỗi interceptor request:", error);
+        return Promise.reject(error);
+    }
 );
 
 api.interceptors.response.use(
     (response) => {
         if (response.config.url.includes("/auth/login") && response.data?.data?.access_token) {
+            console.log("Lưu token từ login:", response.data.data.access_token);
+            localStorage.setItem("token", response.data.data.access_token);
             updateLoginTimestamp();
         }
         return response;
     },
     (error) => {
-        if (error.response && error.response.status === 401 &&
-            !error.config.url.includes("/auth/login") &&
-            !error.config.url.includes("/auth/refresh-token")) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("userInfo");
-            localStorage.removeItem("role");
-            localStorage.removeItem("loginTimestamp");
-            window.location.href = "/";
-        }
+        console.error("Lỗi API:", {
+            url: error.config?.url,
+            status: error.response?.status,
+            message: error.response?.data?.message || error.message,
+            details: error.response?.data,
+        });
+        // Không redirect, để lỗi được truyền về component
         return Promise.reject(error);
     }
 );
