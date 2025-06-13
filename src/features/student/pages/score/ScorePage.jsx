@@ -19,7 +19,7 @@ function ScorePage() {
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Tên kỳ</th>
+                            <th>Học kỳ</th>
                             <th>Thời gian bắt đầu</th>
                             <th>Thời gian kết thúc</th>
                             <th>Trạng thái</th>

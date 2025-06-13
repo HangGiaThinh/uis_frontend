@@ -1,0 +1,87 @@
+Tôi muốn bạn code khi đăng nhập với role ACADEMIC_ADVISOR
+KHi click vào thông tin ở header thì thực hiện api profile lấy thông tin giảng viên hiện lên.
+Null thì hiện không có
+
+api profile: GET: http://localhost:8080/api/v1/advisor/profile
+auth: bearer Token
+response
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy thông tin giảng viên đang đăng nhập",
+    "data": {
+        "lecturer_id": "GV001",
+        "last_name": "Lê",
+        "first_name": "Văn C",
+        "gender": true,
+        "phone_number": "0123456789",
+        "citizen_id": "111222333444",
+        "email": "lvc@gmail.com",
+        "academic_rank": "ThS",
+        "academic_title": null,
+        "specialization": "Công nghệ Thông tin",
+        "image_url": "/images/gv001.jpg",
+        "status": true,
+        "lecturer_account": {
+            "account_id": 1,
+            "username": "GV"
+        },
+        "lecturer_department": {
+            "department_id": "CNTT",
+            "department_name": "Công nghệ Thông tin"
+        }
+    }
+}
+
+Có 1 nút nhấn cập nhật thông tin cá nhân sẽ show lên form cập nhật chỉ có các cột cập nhật
+trong body. gender thì radiobutton, academic_rank dùng dropdown show 1 vài mức ở việt nam,
+ academic_title dùng dropdown show 1 vài mức ở việt nam.
+api cập nhật profile: PUT:http://localhost:8080/api/v1/advisor/profile
+auth: bearer Token
+Body
+{
+	"lecturer_id": "1",
+	"last_name": "Dũng",
+	"first_name": "Trần Quốc",
+	"date_of_birth": "1978-01-01",
+	"gender": "true",
+	"phone_number": "0328777111",
+	"citizen_id": "123456789123",
+	"email": "tqdung@gmail.com",
+	"academic_rank": "ThS",
+	"academic_title": null,
+	"specialization": "Công nghệ thông tin"
+}
+response
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Cập nhật thông tin giảng viên",
+    "data": {
+        "lecturer_id": "GV001",
+        "last_name": "Dũng",
+        "first_name": "Trần Quốc",
+        "gender": true,
+        "phone_number": "0328777111",
+        "citizen_id": "123456789123",
+        "email": "tqdung@gmail.com",
+        "academic_rank": "ThS",
+        "academic_title": null,
+        "specialization": "Công nghệ thông tin",
+        "image_url": "/images/gv001.jpg",
+        "status": true,
+        "lecturer_account": {
+            "account_id": 1,
+            "username": "GV"
+        },
+        "lecturer_department": {
+            "department_id": "CNTT",
+            "department_name": "Công nghệ Thông tin"
+        }
+    }
+}
+
+Lưu ý: hãy code các yêu cầu trên trong thư mục advisor. Code chuyên nghiệp yêu cầu bố cục giao diện chuyên nghiệp. 
+Các xử lý giao diện mượt mà, hiệu ứng đẹp
