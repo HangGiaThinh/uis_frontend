@@ -1,34 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaCog, FaChevronRight } from 'react-icons/fa';
+import { FaCog, FaChevronRight, FaCheckCircle } from 'react-icons/fa';
 
 function Sidebar() {
     const { isAuthenticated, user } = useAuth();
+    const location = useLocation();
 
     const getFeaturesByRole = () => {
         if (!user?.role) return [];
 
         const roleFeatures = {
             STUDENT: [
-                'Đánh giá điểm rèn luyện',
-                'Gửi khiếu nại'
+                { label: 'Đánh giá điểm rèn luyện', path: '/scores' },
+                { label: 'Gửi khiếu nại', path: '/complaint' }
             ],
             CLASS_COMMITTEE: [
-                'Đánh giá điểm rèn luyện',
-                'Quản lý điểm rèn luyện',
-                'Gửi khiếu nại'
+                { label: 'Đánh giá điểm rèn luyện', path: '/scores' },
+                { label: 'Quản lý điểm rèn luyện', path: '/scores/manage' },
+                { label: 'Gửi khiếu nại', path: '/complaint' }
             ],
             ACADEMIC_ADVISOR: [
-                'Quản lý điểm rèn luyện'
+                { label: 'Quản lý điểm rèn luyện', path: '/scores/manage' }
             ],
             EMPLOYEE_FACULTY: [
-                'Quản lý điểm rèn luyện'
+                { label: 'Quản lý điểm rèn luyện', path: '/scores/manage' }
             ],
             EMPLOYEE_DEPARTMENT: [
-                'Tạo tài khoản',
-                'Quản lý sinh viên',
-                'Quản lý điểm rèn luyện',
-                'Phản hồi khiếu nại'
+                { label: 'Tạo tài khoản', path: '/accounts/create' },
+                { label: 'Quản lý sinh viên', path: '/students/manage' },
+                { label: 'Quản lý điểm rèn luyện', path: '/scores/manage' },
+                { label: 'Phản hồi khiếu nại', path: '/complaints/respond' }
             ]
         };
 
@@ -36,9 +38,10 @@ function Sidebar() {
     };
 
     if (!isAuthenticated) return null;
-    
+
     const features = getFeaturesByRole();
-    
+    const activePath = location.pathname;
+
     return (
         <aside className="w-full bg-white shadow rounded-md">
             <div className="flex items-center gap-2 bg-[#00AEEF] text-white px-4 py-3 rounded-t-md border-b">
@@ -46,17 +49,27 @@ function Sidebar() {
                 <h2 className="text-base font-semibold tracking-wide">TÍNH NĂNG</h2>
             </div>
             <ul className="divide-y divide-gray-200">
-                {features.map((feature, index) => (
-                    <li key={index}>
-                        <a
-                            href="#"
-                            className="flex items-center gap-2 px-4 py-2 text-[#00AEEF] hover:bg-[#e6f7fd] hover:font-semibold transition-colors duration-150 text-sm"
-                        >
-                            <FaChevronRight className="text-xs" />
-                            <span className="truncate">{feature}</span>
-                        </a>
-                    </li>
-                ))}
+                {features.map((feature, index) => {
+                    const isActive = activePath === feature.path;
+
+                    return (
+                        <li key={index}>
+                            <Link
+                                to={feature.path}
+                                className={`flex items-center gap-2 px-4 py-2 ${
+                                    isActive ? 'bg-[#e6f7fd] font-semibold' : ''
+                                } text-[#00AEEF] hover:bg-[#e6f7fd] hover:font-semibold transition-colors duration-150 text-sm`}
+                            >
+                                {isActive ? (
+                                    <FaCheckCircle className="text-sm text-green-500" />
+                                ) : (
+                                    <FaChevronRight className="text-xs" />
+                                )}
+                                <span className="truncate">{feature.label}</span>
+                            </Link>
+                        </li>
+                    );
+                })}
             </ul>
         </aside>
     );
