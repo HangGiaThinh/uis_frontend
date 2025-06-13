@@ -1,41 +1,65 @@
-import api from "../../../services/api";
+import api from '../../../services/api';
 
-const login = async (username, password) => {
-  console.log("Sending to /v1/auth/login:", { username, password });
-  try {
-    const response = await api.post("/v1/auth/login", { username, password });
-    console.log("Server response:", response.data);
-    if (response.data?.data?.access_token) {
-      localStorage.setItem("token", response.data.data.access_token);
+/**
+ * Service để xử lý các API liên quan đến authentication
+ */
+const authApi = {
+  /**
+   * Đăng nhập với username và password
+   * @param {string} username - Tên đăng nhập
+   * @param {string} password - Mật khẩu
+   * @returns {Promise} - Promise chứa kết quả đăng nhập từ server
+   */
+  login: async (username, password) => {
+    try {
+      const response = await api.post('/v1/auth/login', { username, password });
+      // API sẽ trả về dữ liệu với định dạng:
+      // { status_code, error, details, message, data: { access_token, user_login } }
+      return response.data;
+    } catch (error) {
+      throw error;
     }
-    return response.data;
-  } catch (error) {
-    console.error("Login error:", error.response?.data || error.message);
-    throw error;
-  }
+  },
+
+  /**
+   * Đăng xuất người dùng hiện tại
+   * @returns {Promise} - Promise chứa kết quả đăng xuất từ server
+   */
+  logout: async () => {
+    try {
+      const response = await api.post('/v1/auth/logout');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Làm mới access token bằng refresh token (được lưu trong cookie)
+   * Chỉ được gọi tự động sau mỗi 30 phút sử dụng ứng dụng
+   * @returns {Promise} - Promise chứa access token mới
+   */
+  refreshToken: async () => {
+    try {
+      const response = await api.get('/v1/auth/refresh-token');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  /**
+ * Lấy thông tin profile người dùng đang đăng nhập
+ * @returns {Promise} - Promise chứa dữ liệu người dùng
+ */
+  getProfile: async () => {
+    try {
+      const response = await api.get('/v1/student/profile');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
 };
 
-const logout = async () => {
-  try {
-    const response = await api.post("/v1/auth/logout");
-    localStorage.removeItem("token");
-    localStorage.removeItem("loginTimestamp");
-    return response.data;
-  } catch (error) {
-    console.error("Logout error:", error.response?.data || error.message);
-    throw error;
-  }
-};
-
-const fetchUserProfile = async () => {
-  try {
-    const response = await api.get("/v1/student/profile");
-    console.log("User profile response:", response.data);
-    return response.data.data;
-  } catch (error) {
-    console.error("Fetch user profile error:", error.response?.data || error.message);
-    throw error;
-  }
-};
-
-export { login, logout, fetchUserProfile };
+export default authApi;

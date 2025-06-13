@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../../context/AuthContext";
-import { fetchUserProfile } from "../../../auth/services/authApi";
+import authApi from "../../../auth/services/authApi"; // sửa lại import
 
 function StudentProfileLoader({ children }) {
     const { isAuthenticated, user } = useAuth();
@@ -17,9 +17,9 @@ function StudentProfileLoader({ children }) {
             }
 
             try {
-                const data = await fetchUserProfile();
+                const data = await authApi.getProfile(); // dùng getProfile
                 console.log("✅ Profile response:", data);
-                setProfile(data);
+                setProfile(data.data);
             } catch (err) {
                 console.error("❌ Lỗi khi gọi API:", err);
                 const message = err.response?.data?.message || err.message || "Lỗi kết nối đến máy chủ.";

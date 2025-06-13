@@ -11,8 +11,9 @@ function Sidebar() {
 
         const roleFeatures = {
             STUDENT: [
-                { label: 'Đánh giá điểm rèn luyện', path: '/scores' },
-                { label: 'Gửi khiếu nại', path: '/complaint' }
+                { label: "Đánh giá điểm rèn luyện", path: "/scores" },
+                { label: "Gửi khiếu nại", path: "/complaint" },
+                { label: "Kết quả học tập", path: "/academic-results" } // Thêm tính năng mới
             ],
             CLASS_COMMITTEE: [
                 { label: 'Đánh giá điểm rèn luyện', path: '/scores' },
