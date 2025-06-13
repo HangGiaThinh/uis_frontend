@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getComplaints } from '../../services/complaintApi'
+import { getComplaints } from '../../../services/complaintApi'
 
 function ComplaintList() {
     const { data: complaints, isLoading, error } = useQuery({

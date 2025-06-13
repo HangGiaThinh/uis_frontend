@@ -1,0 +1,22 @@
+Nếu login role 
+*STUDENT
+tính năng gồm: 
++ Đánh giá điểm rèn luyện
++ Gửi khiếu nại
+*CLASS_COMMITTEE
+tính năng gồm:
++ Đánh giá điểm rèn luyện
++ Quản lý điểm rèn luyện
++ Gửi khiếu nại
+*ACADEMIC_ADVISOR
+tính năng gồm:
++ Quản lý điểm rèn luyện
+*EMPLOYEE_FACULTY
+tính năng gồm:
++ Quản lý điểm rèn luyện
+*EMPLOYEE_DEPARTMENT
+tính năng gồm:
++ Tạo tài khoản
++ Quản lý sinh viên
++ Quản lý điểm rèn luyện
++ Phản hồi khiếu nại

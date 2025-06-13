@@ -1,12 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
-import NotificationPanel from '../features/notification/NotificationPanel';
-import UserInfoPanel from '../features/user/UserInfoPanel';
-import UserProfile from '../features/user/UserProfile';
-import StudentList from '../features/student/StudentList';
-import ScoreList from '../features/score/ScoreList';
-import ComplaintList from '../features/complaint/ComplaintList';
-import NotificationList from '../features/notification/NotificationList';
+import NotificationPanel from '../features/home/notification/NotificationPanel';
+import UserInfoPanel from '../features/home/UserInfoPanel';
+import UserProfile from '../features/student/profile/UserProfile';
+import ScoreList from '../features/student/trainingscore/ScoreList';
+import ComplaintList from '../features/student/complaint/ComplaintList';
+import NotificationList from '../features/home/notification/NotificationList';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { AuthProvider } from '../context/AuthContext';
 
@@ -20,25 +19,24 @@ function AppRoutes() {
                         <Route path="/dashboard" element={<NotificationPanel />} />
                         <Route
                             path="/profile"
-                            element={<ProtectedRoute allowedRoles={['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT']} />}
+                            element={<ProtectedRoute allowedRoles={['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT']} />}
                         >
                             <Route path="" element={<UserProfile />} />
                         </Route>
                         <Route
                             path="/user"
-                            element={<ProtectedRoute allowedRoles={['STUDENT', 'LECTURER', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT']} />}
+                            element={<ProtectedRoute allowedRoles={['STUDENT', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'EMPLOYEE_FACULTY', 'EMPLOYEE_DEPARTMENT']} />}
                         >
                             <Route path="" element={<UserInfoPanel />} />
                         </Route>
                         <Route
                             path="/students"
-                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY']} />}
+                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR']} />}
                         >
-                            <Route path="" element={<StudentList />} />
                         </Route>
                         <Route
                             path="/scores"
-                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY', 'LECTURER']} />}
+                            element={<ProtectedRoute allowedRoles={["STUDENT", 'EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR']} />}
                         >
                             <Route path="" element={<ScoreList />} />
                         </Route>
@@ -50,7 +48,7 @@ function AppRoutes() {
                         </Route>
                         <Route
                             path="/notifications"
-                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY', 'LECTURER', 'STUDENT']} />}
+                            element={<ProtectedRoute allowedRoles={['EMPLOYEE_DEPARTMENT', 'EMPLOYEE_FACULTY', 'CLASS_COMMITTEE', 'ACADEMIC_ADVISOR', 'STUDENT']} />}
                         >
                             <Route path="" element={<NotificationList />} />
                         </Route>

@@ -4,7 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
 import LoginForm from '../../features/auth/LoginForm';
-import UserInfoPanel from '../../features/user/UserInfoPanel';
+import UserInfoPanel from '../../features/home/UserInfoPanel';
 import { useAuth } from '../../context/AuthContext';
 
 function MainLayout() {

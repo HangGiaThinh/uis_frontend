@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
-import { submitComplaint } from '../../services/complaintApi'
+import { submitComplaint } from '../../../services/complaintApi'
 
 function ComplaintForm() {
     const { register, handleSubmit, reset, formState: { errors } } = useForm()

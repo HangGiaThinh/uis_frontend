@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { getScoreForm, submitScoreForm } from '../../services/scoreApi'
+import { getScoreForm, submitScoreForm } from '../../../services/scoreApi'
 
 function ScoreForm() {
     const { register, handleSubmit, formState: { errors } } = useForm()

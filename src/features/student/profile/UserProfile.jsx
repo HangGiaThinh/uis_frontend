@@ -1,9 +1,9 @@
 import React from 'react';
 import PersonalInfo from './PersonalInfo';
 import StudentInfo from './StudentInfo';
-import NotificationCount from '../notification/NotificationCount';
-import ScoreTable from '../score/ScoreTable';
-import ConductScoreTable from '../score/ConductScoreTable';
+import NotificationCount from '../../home/notification/NotificationCount';
+import ScoreTable from './ScoreTable';
+import ConductScoreTable from '../trainingscore/ConductScoreTable';
 
 function UserProfile() {
     return (
