@@ -1,5 +1,6 @@
 // src/features/auth/components/LoginForm.jsx
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function LoginForm({ onSubmit, loading = false, errorMessage = "" }) {
     const [username, setUsername] = useState("");
@@ -151,7 +152,7 @@ function LoginForm({ onSubmit, loading = false, errorMessage = "" }) {
 
                 {/* Forgot password */}
                 <div className="text-right mb-3">
-                    <a href="#" className="text-xs text-blue-600 hover:underline">Quên mật khẩu</a>
+                    <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">Quên mật khẩu</Link>
                 </div>
 
                 {/* Error message */}

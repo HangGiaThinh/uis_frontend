@@ -3,7 +3,7 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-function ProtectedRoute({ allowedRoles }) {
+function ProtectedRoute({ allowedRoles, fallback, children }) {
     const { isAuthenticated, checkPermission, loading } = useAuth();
 
     if (loading) {
@@ -19,10 +19,13 @@ function ProtectedRoute({ allowedRoles }) {
     }
 
     if (allowedRoles && !checkPermission(allowedRoles)) {
+        if (fallback) {
+            return fallback;
+        }
         return <Navigate to="/dashboard" replace />;
     }
 
-    return <Outlet />;
+    return children || <Outlet />;
 }
 
 export default ProtectedRoute;

@@ -1,31 +1,16 @@
 import React, { useState } from "react";
 import { User, Pencil } from "lucide-react";
-import AdvisorProfileLoader from "../../components/profile/AdvisorProfileLoader";
+import FacultyProfileLoader from "../../components/profile/FacultyProfileLoader";
 import { useForm } from "react-hook-form";
 import profileApi from "../../services/profile/profileApi";
 
-const ACADEMIC_RANKS = [
-  { value: "ThS", label: "Thạc sĩ" },
-  { value: "TS", label: "Tiến sĩ" },
-  { value: "PGS.TS", label: "Phó Giáo sư, Tiến sĩ" },
-  { value: "GS.TS", label: "Giáo sư, Tiến sĩ" },
-];
-
-const ACADEMIC_TITLES = [
-  { value: "GV", label: "Giảng viên" },
-  { value: "GVC", label: "Giảng viên chính" },
-  { value: "PGS", label: "Phó Giáo sư" },
-  { value: "GS", label: "Giáo sư" },
-];
-
-function AdvisorProfilePage() {
+function FacultyProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [reloadProfile, setReloadProfile] = useState(0);
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm();
 
@@ -52,8 +37,8 @@ function AdvisorProfilePage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Thông tin Giảng viên</h1>
-      <AdvisorProfileLoader reload={reloadProfile}>
+      <h1 className="text-2xl font-bold mb-4">Thông tin Nhân viên Khoa</h1>
+      <FacultyProfileLoader reload={reloadProfile}>
         {({ profile }) =>
           profile ? (
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -202,58 +187,6 @@ function AdvisorProfilePage() {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                       />
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Học hàm
-                      </label>
-                      <select
-                        defaultValue={profile.academic_rank}
-                        {...register("academic_rank", {
-                          required: "Vui lòng chọn học hàm",
-                        })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      >
-                        <option value="">Chọn học hàm</option>
-                        {ACADEMIC_RANKS.map((rank) => (
-                          <option key={rank.value} value={rank.value}>
-                            {rank.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Học vị
-                      </label>
-                      <select
-                        defaultValue={profile.academic_title}
-                        {...register("academic_title")}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      >
-                        <option value="">Chọn học vị</option>
-                        {ACADEMIC_TITLES.map((title) => (
-                          <option key={title.value} value={title.value}>
-                            {title.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Chuyên ngành
-                      </label>
-                      <input
-                        type="text"
-                        defaultValue={profile.specialization}
-                        {...register("specialization", {
-                          required: "Vui lòng nhập chuyên ngành",
-                        })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      />
-                    </div>
                   </div>
 
                   <div className="flex justify-end space-x-4 mt-6">
@@ -306,23 +239,15 @@ function AdvisorProfilePage() {
                         Thông tin cá nhân
                       </h2>
                       {[
-                        ["Mã giảng viên", profile.lecturer_id],
-                        [
-                          "Họ và tên",
-                          `${profile.last_name} ${profile.first_name}`,
-                        ],
+                        ["Mã nhân viên", profile.id],
+                        ["Họ và tên", `${profile.last_name} ${profile.first_name}`],
                         ["Giới tính", profile.gender ? "Nam" : "Nữ"],
                         ["Số điện thoại", profile.phone_number],
                         ["CCCD", profile.citizen_id],
                         ["Email", profile.email],
                       ].map(([label, value]) => (
-                        <div
-                          key={label}
-                          className="flex justify-between w-full"
-                        >
-                          <span className="font-semibold min-w-[120px]">
-                            {label}:
-                          </span>
+                        <div key={label} className="flex justify-between w-full">
+                          <span className="font-semibold min-w-[120px]">{label}:</span>
                           <span className="text-left">{value}</span>
                         </div>
                       ))}
@@ -334,18 +259,11 @@ function AdvisorProfilePage() {
                         Thông tin chuyên môn
                       </h2>
                       {[
-                        ["Học hàm", profile.academic_rank],
-                        ["Học vị", profile.academic_title || "Không có"],
-                        ["Chuyên ngành", profile.specialization],
-                        ["Khoa", profile.lecturer_department.department_name],
+                        ["Khoa", profile.employee_department?.name],
+                        // ["Vai trò", profile.employee_role?.name],
                       ].map(([label, value]) => (
-                        <div
-                          key={label}
-                          className="flex justify-between w-full"
-                        >
-                          <span className="font-semibold min-w-[120px]">
-                            {label}:
-                          </span>
+                        <div key={label} className="flex justify-between w-full">
+                          <span className="font-semibold min-w-[120px]">{label}:</span>
                           <span className="text-left">{value}</span>
                         </div>
                       ))}
@@ -354,13 +272,11 @@ function AdvisorProfilePage() {
                 </div>
               )}
             </div>
-          ) : (
-            <p>Không có dữ liệu để hiển thị.</p>
-          )
+          ) : null
         }
-      </AdvisorProfileLoader>
+      </FacultyProfileLoader>
     </div>
   );
 }
 
-export default AdvisorProfilePage;
+export default FacultyProfilePage; 

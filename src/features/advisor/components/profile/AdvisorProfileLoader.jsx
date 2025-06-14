@@ -2,35 +2,36 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../../context/AuthContext";
 import profileApi from "../../services/profile/profileApi";
 
-function AdvisorProfileLoader({ children }) {
+function AdvisorProfileLoader({ children, reload }) {
     const { isAuthenticated, user } = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
+        let ignore = false;
         const fetchProfile = async () => {
             if (!isAuthenticated || !user) {
                 setError("Vui lòng đăng nhập để xem thông tin.");
                 setLoading(false);
                 return;
             }
-
             try {
+                setLoading(true);
                 const data = await profileApi.getProfile();
-                console.log("✅ Profile response:", data);
-                setProfile(data);
+                if (!ignore) setProfile(data);
             } catch (err) {
-                console.error("❌ Lỗi khi gọi API:", err);
-                const message = err.response?.data?.message || err.message || "Lỗi kết nối đến máy chủ.";
-                setError(`Lỗi khi tải thông tin: ${message}`);
+                if (!ignore) {
+                    const message = err.response?.data?.message || err.message || "Lỗi kết nối đến máy chủ.";
+                    setError(`Lỗi khi tải thông tin: ${message}`);
+                }
             } finally {
-                setLoading(false);
+                if (!ignore) setLoading(false);
             }
         };
-
         fetchProfile();
-    }, [isAuthenticated, user]);
+        return () => { ignore = true; };
+    }, [isAuthenticated, user, reload]);
 
     if (loading) return <div className="text-center p-4">Đang tải thông tin giảng viên...</div>;
     if (error) return <div className="text-red-500 text-center p-4">{error}</div>;

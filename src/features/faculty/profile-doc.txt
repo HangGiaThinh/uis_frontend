@@ -1,0 +1,86 @@
+GET: http://localhost:8080/api/v1/faculty/profile
+Authorization
+Bearer Token
+Token <token>
+response
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy thông tin nhân viên đang đăng nhập",
+    "data": {
+        "id": "NV001",
+        "gender": true,
+        "email": "nva@gmail.com",
+        "status": true,
+        "last_name": "Nguyễn Văn",
+        "first_name": "A",
+        "phone_number": "0123456789",
+        "citizen_id": "555666777888",
+        "image_url": "https://d17p1008zsetln.cloudfront.net/customers/53617175-eb2d-4a39-ba87-65f6af30512e-avatar1.avif",
+        "employee_account": {
+            "id": 4,
+            "username": "KHOA"
+        },
+        "employee_department": {
+            "id": "CNTT",
+            "name": "Công nghệ Thông tin"
+        },
+        "employee_role": {
+            "id": 4,
+            "name": "EMPLOYEE_FACULTY"
+        }
+    }
+}
+
+api cập nhật thông tin
+PUT: http://localhost:8080/api/v1/faculty/profile
+Authorization
+Bearer Token
+Token <token>
+response
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Cập nhật thông tin nhân viên đang đăng nhập",
+    "data": {
+        "id": "NV001",
+        "gender": true,
+        "email": "nva@gmail.com",
+        "status": true,
+        "last_name": "An",
+        "first_name": "Nguyễn Văn",
+        "phone_number": "0322123123",
+        "citizen_id": "555666777888",
+        "image_url": "https://d17p1008zsetln.cloudfront.net/customers/53617175-eb2d-4a39-ba87-65f6af30512e-avatar1.avif",
+        "employee_account": {
+            "id": 4,
+            "username": "KHOA"
+        },
+        "employee_department": {
+            "id": "CNTT",
+            "name": "Công nghệ Thông tin"
+        },
+        "employee_role": {
+            "id": 4,
+            "name": "EMPLOYEE_FACULTY"
+        }
+    }
+}
+
+api dối với department tương tự faculty phía trên chỉ đổi tên api mà thôi
+GET: http://localhost:8080/api/v1/department/profile
+PUT: http://localhost:8080/api/v1/department/profile
+
+AVATAR						    NÚT CHỈNH SỬA 
+
+
+
+Thông tin cá nhân 			    Thông tin chuyên môn
+Mã nhân viên: 	NV001			Khoa: Công nghệ Thông tin
+Họ và tên:  	Dũng Trần Quốc
+Giới tính: 	Nam
+Số điện thoại:	0328777111
+CCCD:		123456789124
+Email:		tqdung@gmail.com

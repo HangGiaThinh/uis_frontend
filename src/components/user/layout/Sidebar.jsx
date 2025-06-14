@@ -18,11 +18,11 @@ function Sidebar() {
             ],
             CLASS_COMMITTEE: [
                 { label: 'Đánh giá điểm rèn luyện', path: '/scores' },
-                { label: 'Quản lý điểm rèn luyện', path: '/scores/manage' },
+                { label: 'Quản lý điểm rèn luyện', path: '/class-committee/training-scores' },
                 { label: 'Gửi khiếu nại', path: '/complaint' }
             ],
             ACADEMIC_ADVISOR: [
-                { label: 'Quản lý điểm rèn luyện', path: '/scores/manage' }
+                { label: 'Quản lý điểm rèn luyện', path: '/advisor/training-scores' }
             ],
             EMPLOYEE_FACULTY: [
                 { label: 'Quản lý điểm rèn luyện', path: '/scores/manage' }

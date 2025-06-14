@@ -1,0 +1,109 @@
+api lấy thông tin lớplớp
+GET: http://localhost:8080/api/v1/advisor/class-name
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy ra tên lớp đang cố vấn",
+    "data": {
+        "class_id": "E22CQCN02",
+        "major": "Công nghệ thông tin",
+        "education_level": "CLC",
+        "academic_year": "2022-2027",
+        "quantity_student": 2
+    }
+}
+api Lấy danh sách điểm rèn luyện theo lớp và học kỳ
+GET: http://localhost:8080/api/v1/advisor/training-scores?semesterId=1
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params: semesterId
+response
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy danh sách điểm rèn luyện theo lớp và học kỳ",
+    "data": [
+        {
+            "training_score_id": 2,
+            "student_id": "N22DCVT076",
+            "student_first_name": "Quang",
+            "student_last_name": "Nguyễn Văn",
+            "total_score": 72,
+            "classification": "FAIR",
+            "status": "COMPLETED"
+        },
+        {
+            "training_score_id": 4,
+            "student_id": "N22DCVT093",
+            "student_first_name": "Thịnh",
+            "student_last_name": "Hàng Gia",
+            "total_score": 0,
+            "classification": "POOR",
+            "status": "WAIT_STUDENT"
+        }
+    ]
+}
+
+Nếu rơi vào các cụm từ này thì chuyển đổi sang tiếng việt
+    WAIT_STUDENT - Chờ sinh viên,
+    WAIT_CLASS_COMMITTEE - Chờ ban cán sự,
+    WAIT_ADVISOR - Chờ CVHT,
+    WAIT_FACULTY - Chờ khoa,
+    WAIT_DEPARTMENT - Chờ phòng CTSV,
+    COMPLETED - Hoàn thành;
+
+    EXCELLENT - Xuất sắc,
+    GOOD - Giỏi,
+    FAIR - Khá,
+    AVERAGE - Trung bình,
+    WEAK - Yếu,
+    POOR - Kém;
+
+Yêu cầu: Khi nhấn vào tính năng quản lý điểm rèn luyện của role CVHT (ACADEMIC_ADVISOR)
+thì show ra table danh sách các điểm rèn luyện trên hãy tạo thêm cột Hành động "Button xem chi tiết". Phải chọn học kỳ mới show ra
+GET danh sách học kỳ: http://localhost:8080/api/v1/advisor/semesters
+Hãy tạo 1 dropdown để chọn học kỳ 
+phần hiển thị sẽ là ví dụ "HK 2 năm 2024-2025"
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Danh sách học kỳ của lớp",
+    "data": [
+        {
+            "id": 6,
+            "order": 2,
+            "academicYear": "2024-2025"
+        },
+        {
+            "id": 5,
+            "order": 1,
+            "academicYear": "2024-2025"
+        },
+        {
+            "id": 4,
+            "order": 2,
+            "academicYear": "2023-2024"
+        },
+        {
+            "id": 3,
+            "order": 1,
+            "academicYear": "2023-2024"
+        },
+        {
+            "id": 2,
+            "order": 2,
+            "academicYear": "2022-2023"
+        },
+        {
+            "id": 1,
+            "order": 1,
+            "academicYear": "2022-2023"
+        }
+    ]
+}
