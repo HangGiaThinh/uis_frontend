@@ -35,7 +35,7 @@ function ScorePage() {
                                 <td>{new Date(score.end_date).toLocaleDateString()}</td>
                                 <td>{score.status}</td>
                                 <td>
-                                    <Link to={`/scores/${score.id}`} className="btn btn-sm btn-primary">
+                                    <Link to={`/scores/${score.id}`} className="btn bg-[#00AEEF] hover:bg-[#0095cc] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
                                         Xem chi tiết
                                     </Link>
                                 </td>
@@ -44,9 +44,7 @@ function ScorePage() {
                     </tbody>
                 </table>
             </div>
-            <Link to="/" className="btn btn-secondary mt-4" onClick={() => console.log('Navigating to home')}>
-                Quay lại Trang chủ
-            </Link>
+            <Link to="/" className="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 mt-4">Quay lại Trang chủ</Link>
         </div>
     );
 }

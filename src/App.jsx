@@ -9,6 +9,10 @@ import ScoreDetailPage from "./features/student/pages/score/ScoreDetailPage";
 import StudentAcademicResultsPage from "./features/student/pages/academic/StudentAcademicResultsPage";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import ChangePasswordPage from "./features/student/pages/profile/ChangePasswordPage";
+import ComplaintPage from "./features/student/pages/complaint/ComplaintPage";
+import ComplaintDetailPage from "./features/student/pages/complaint/ComplaintDetailPage";
+import CreateComplaintForm from "./features/student/components/complaint/CreateComplaintForm";
 
 function App() {
   return (
@@ -40,6 +44,20 @@ function App() {
             element={<ProtectedRoute allowedRoles={["STUDENT", "CLASS_COMMITTEE"]} />}
           >
             <Route path="/academic-results" element={<StudentAcademicResultsPage />} />
+          </Route>
+          <Route
+            path="/change-password"
+            element={<ProtectedRoute allowedRoles={["STUDENT", "CLASS_COMMITTEE", "ACADEMIC_ADVISOR", "EMPLOYEE_FACULTY", "EMPLOYEE_DEPARTMENT"]} />}
+          >
+            <Route path="/change-password" element={<ChangePasswordPage />} />
+          </Route>
+          <Route
+            path="/complaints"
+            element={<ProtectedRoute allowedRoles={["STUDENT", "CLASS_COMMITTEE"]} />}
+          >
+            <Route path="/complaints" element={<ComplaintPage />} />
+            <Route path="/complaints/:id" element={<ComplaintDetailPage />} />
+            <Route path="/complaints/create" element={<CreateComplaintForm />} />
           </Route>
         </Route>
       </Routes>

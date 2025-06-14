@@ -7,10 +7,9 @@ function UserInfoPanel() {
     const navigate = useNavigate();
     const { user: authUser, role, position, logout } = useAuth();
     const [user, setUser] = useState(null);
-    const [isExpanded, setIsExpanded] = useState(false); // Trạng thái toggle
+    const [isExpanded, setIsExpanded] = useState(false);
 
     useEffect(() => {
-        // Lấy thông tin người dùng từ context
         if (authUser) {
             const userInfo = {
                 userId: authUser.user_id || '',
@@ -24,7 +23,7 @@ function UserInfoPanel() {
     }, [authUser, role, position]);
 
     const handleLogout = () => {
-        logout(); // Sử dụng hàm logout từ AuthContext
+        logout();
     };
 
     const toggleExpand = () => {
@@ -33,13 +32,16 @@ function UserInfoPanel() {
 
     if (!user) return <div>Loading...</div>;
 
-    // Tạo chuỗi hiển thị vai trò
     const roleDisplay = user.role === 'STUDENT' ? 'Sinh viên' : user.role === 'ACADEMIC_ADVISOR' ? 'Cố vấn học tập' : user.role === 'CLASS_COMMITTEE' ? 'Ban cán sự lớp' : user.role === 'EMPLOYEE_FACULTY' ? 'Nhân viên khoa' : user.role === 'EMPLOYEE_DEPARTMENT' ? 'Nhân viên phòng ban' : user.role;
     const positionDisplay = user.position ? user.position : '';
     let rolePositionDisplay = roleDisplay;
     if (positionDisplay) {
         rolePositionDisplay = roleDisplay + ` - ${positionDisplay}`;
     }
+
+    const handleChangePassword = () => {
+        navigate('/change-password');
+    };
 
     return (
         <div className="rounded shadow-md bg-white overflow-hidden text-sm text-gray-700">
@@ -83,7 +85,9 @@ function UserInfoPanel() {
             </div>
 
             <div className="p-2 italic text-center text-gray-500 text-sm">
-                <a href="#" className="hover:underline">Đổi mật khẩu</a>
+                <button onClick={handleChangePassword} className="hover:underline">
+                    Đổi mật khẩu
+                </button>
             </div>
         </div>
     );
