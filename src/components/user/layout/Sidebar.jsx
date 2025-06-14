@@ -13,13 +13,13 @@ function Sidebar() {
         const roleFeatures = {
             STUDENT: [
                 { label: "Đánh giá điểm rèn luyện", path: "/scores" },
-                { label: "Gửi khiếu nại", path: "/complaint" },
-                { label: "Kết quả học tập", path: "/academic-results" } // Thêm tính năng mới
+                { label: "Gửi khiếu nại", path: "/complaints" },
+                { label: "Kết quả học tập", path: "/academic-results" }
             ],
             CLASS_COMMITTEE: [
                 { label: 'Đánh giá điểm rèn luyện', path: '/scores' },
                 { label: 'Quản lý điểm rèn luyện', path: '/class-committee/training-scores' },
-                { label: 'Gửi khiếu nại', path: '/complaint' }
+                { label: 'Gửi khiếu nại', path: '/complaints' }
             ],
             ACADEMIC_ADVISOR: [
                 { label: 'Quản lý điểm rèn luyện', path: '/advisor/training-scores' }

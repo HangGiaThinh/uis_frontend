@@ -3,7 +3,6 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8080/api/v1/student';
 
 const getToken = () => {
-    // Giả lập lấy token từ localStorage hoặc context (thay bằng logic thực tế)
     return localStorage.getItem('token') || 'your-token-here';
 };
 
@@ -25,7 +24,13 @@ export const getTrainingScoreDetail = async (id) => {
 
 export const submitTrainingScore = async (trainingScoreId, data) => {
     const token = getToken();
-    const response = await axios.post(`${API_URL}/training-scores/${trainingScoreId}`, data, {
+    const currentDate = new Date().toISOString(); // Lấy ngày hiện tại (12:44 AM +07, 14/06/2025)
+    const payload = {
+        ...data,
+        student_submission_date: currentDate, // Thêm ngày sinh viên chấm
+        status: 'WAIT_CLASS_COMMITTEE', // Chuyển trạng thái
+    };
+    const response = await axios.post(`${API_URL}/training-scores/${trainingScoreId}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;

@@ -1,4 +1,5 @@
 import api from "../../../../services/api";
+
 const fetchUserAcademicResults = async () => {
     try {
         const response = await api.get("/v1/student/academic-results");
@@ -9,5 +10,9 @@ const fetchUserAcademicResults = async () => {
         throw error;
     }
 };
+const fetchAverageGPA = async () => {
+    const response = await api.get("/v1/student/average-gpa");
+    return response.data.data; // Vì data nằm trong .data.data
+};
 
-export { fetchUserAcademicResults };
+export { fetchUserAcademicResults, fetchAverageGPA };
