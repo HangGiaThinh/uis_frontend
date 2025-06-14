@@ -1,37 +1,29 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8080/api/v1/student';
+import api from '../../../../services/api';
+import { API_ENDPOINTS } from '../../../../constants';
 
 const getToken = () => {
     return localStorage.getItem('token') || 'your-token-here';
 };
 
 export const getTrainingScores = async () => {
-    const token = getToken();
-    const response = await axios.get(`${API_URL}/training-scores`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
+    const url = API_ENDPOINTS.SCORES.TRAINING_SCORES;
+    console.log('Fetching training scores from URL:', api.defaults.baseURL + url);
+    const response = await api.get(url);
+    return response.data.data;
 };
 
 export const getTrainingScoreDetail = async (id) => {
-    const token = getToken();
-    const response = await axios.get(`${API_URL}/training-scores/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
+    const response = await api.get(API_ENDPOINTS.SCORES.TRAINING_SCORE_DETAIL(id));
+    return response.data.data;
 };
 
 export const submitTrainingScore = async (trainingScoreId, data) => {
-    const token = getToken();
-    const currentDate = new Date().toISOString(); // Lấy ngày hiện tại (12:44 AM +07, 14/06/2025)
+    const currentDate = new Date().toISOString();
     const payload = {
         ...data,
-        student_submission_date: currentDate, // Thêm ngày sinh viên chấm
-        status: 'WAIT_CLASS_COMMITTEE', // Chuyển trạng thái
+        student_submission_date: currentDate,
+        status: 'WAIT_CLASS_COMMITTEE',
     };
-    const response = await axios.post(`${API_URL}/training-scores/${trainingScoreId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await api.post(API_ENDPOINTS.SCORES.SUBMIT_TRAINING_SCORE(trainingScoreId), payload);
     return response.data;
 };

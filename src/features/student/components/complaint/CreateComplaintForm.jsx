@@ -1,69 +1,83 @@
+import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useMutation } from '@tanstack/react-query';
-import { createComplaint } from '../../services/complaint/complaintService';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { useCreateComplaint } from '../../services/complaint/complaintService';
+import { ROUTES } from '../../../../constants';
 
-function CreateComplaintForm() {
+const CreateComplaintForm = () => {
     const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors } } = useForm();
-
-    const mutation = useMutation({
-        mutationFn: createComplaint,
-        onSuccess: () => {
-            alert('Gửi khiếu nại thành công!');
-            navigate('/complaints');
-        },
-        onError: (error) => alert('Lỗi khi gửi khiếu nại: ' + error.message),
-    });
+    const { mutate: createComplaint, isLoading } = useCreateComplaint();
 
     const onSubmit = (data) => {
-        mutation.mutate(data);
+        createComplaint(data, {
+            onSuccess: () => {
+                toast.success('Gửi khiếu nại thành công');
+                navigate(ROUTES.COMPLAINTS.LIST);
+            },
+            onError: (error) => {
+                toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            }
+        });
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Tiêu đề</label>
-                <input
-                    type="text"
-                    {...register('title', { required: 'Vui lòng nhập tiêu đề' })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-                {errors.title && (
-                    <span className="text-red-500 text-sm">{errors.title.message}</span>
-                )}
-            </div>
+        <div className="container mx-auto px-4 py-8">
+            <div className="max-w-2xl mx-auto">
+                <h1 className="text-2xl font-bold text-gray-800 mb-6">Gửi khiếu nại mới</h1>
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Nội dung</label>
-                <textarea
-                    {...register('content', { required: 'Vui lòng nhập nội dung' })}
-                    rows="4"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-                {errors.content && (
-                    <span className="text-red-500 text-sm">{errors.content.message}</span>
-                )}
-            </div>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div>
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                            Tiêu đề
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            {...register('title', { required: 'Vui lòng nhập tiêu đề' })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        {errors.title && (
+                            <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                        )}
+                    </div>
 
-            <div className="flex justify-end space-x-4">
-                <button
-                    type="button"
-                    onClick={() => navigate('/complaints')}
-                    className="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
-                >
-                    Hủy
-                </button>
-                <button
-                    type="submit"
-                    className="btn bg-[#00AEEF] hover:bg-[#0095cc] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
-                    disabled={mutation.isLoading}
-                >
-                    {mutation.isLoading ? 'Đang gửi...' : 'Gửi khiếu nại'}
-                </button>
+                    <div>
+                        <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+                            Nội dung
+                        </label>
+                        <textarea
+                            id="content"
+                            rows={6}
+                            {...register('content', { required: 'Vui lòng nhập nội dung' })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        {errors.content && (
+                            <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+                        )}
+                    </div>
+
+                    <div className="flex space-x-4">
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+                        >
+                            {isLoading ? 'Đang gửi...' : 'Gửi khiếu nại'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate(ROUTES.COMPLAINTS.LIST)}
+                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
+                        >
+                            Quay lại
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     );
-}
+};
 
 export default CreateComplaintForm; 

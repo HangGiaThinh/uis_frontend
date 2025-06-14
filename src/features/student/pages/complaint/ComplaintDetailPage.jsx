@@ -1,102 +1,83 @@
-import { useQuery } from '@tanstack/react-query';
-import { useParams, Link } from 'react-router-dom';
-import { getComplaintDetail } from '../../services/complaint/complaintService';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useComplaint } from '../../services/complaint/complaintService';
+import { SkeletonCard } from '../../../../components/common/Skeleton';
+import { COMPLAINT_STATUS_LABELS, COMPLAINT_STATUS_COLORS, ROUTES } from '../../../../constants';
 
-function ComplaintDetailPage() {
+const ComplaintDetailPage = () => {
     const { id } = useParams();
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['complaintDetail', id],
-        queryFn: () => getComplaintDetail(id),
-    });
+    const navigate = useNavigate();
+    const { data: complaint, isLoading, error } = useComplaint(id);
 
-    const getStatusBadgeClass = (status) => {
-        switch (status) {
-            case 'PROCESSING':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'PROCESSED':
-                return 'bg-green-100 text-green-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
+    if (isLoading) {
+        return <SkeletonCard />;
+    }
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 'PROCESSING':
-                return 'Đang xử lý';
-            case 'PROCESSED':
-                return 'Đã xử lý';
-            default:
-                return status;
-        }
-    };
-
-    if (isLoading) return <div className="container mx-auto p-4">Đang tải...</div>;
-    if (error) return <div className="container mx-auto p-4">Lỗi: {error.message}</div>;
-
-    const complaint = data?.data;
+    if (error) {
+        return (
+            <div className="text-center text-red-600">
+                Có lỗi xảy ra khi tải thông tin khiếu nại
+            </div>
+        );
+    }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Chi tiết khiếu nại</h1>
-
-            <div className="bg-white shadow rounded-lg p-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <h2 className="text-lg font-semibold mb-2">Thông tin khiếu nại</h2>
-                        <div className="space-y-2">
-                            <p><span className="font-medium">Mã khiếu nại:</span> {complaint.complaint_id}</p>
-                            <p><span className="font-medium">Tiêu đề:</span> {complaint.title}</p>
-                            <p><span className="font-medium">Nội dung:</span> {complaint.content}</p>
-                            <p><span className="font-medium">Ngày gửi:</span> {new Date(complaint.send_date).toLocaleString()}</p>
-                            <p>
-                                <span className="font-medium">Trạng thái:</span>{' '}
-                                <span className={`px-2 py-1 rounded-full text-sm ${getStatusBadgeClass(complaint.status)}`}>
-                                    {getStatusText(complaint.status)}
-                                </span>
-                            </p>
-                        </div>
+        <div className="container mx-auto px-4 py-8">
+            <div className="max-w-3xl mx-auto">
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                    <div className="flex justify-between items-start mb-6">
+                        <h1 className="text-2xl font-bold text-gray-800">{complaint.title}</h1>
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${COMPLAINT_STATUS_COLORS[complaint.status]}`}>
+                            {COMPLAINT_STATUS_LABELS[complaint.status]}
+                        </span>
                     </div>
 
-                    <div>
-                        <h2 className="text-lg font-semibold mb-2">Thông tin người gửi</h2>
-                        <div className="space-y-2">
-                            <p><span className="font-medium">Mã sinh viên:</span> {complaint.student_id}</p>
-                            <p><span className="font-medium">Họ và tên:</span> {complaint.student_name}</p>
+                    <div className="space-y-4">
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-700 mb-2">Nội dung khiếu nại</h2>
+                            <p className="text-gray-600 whitespace-pre-wrap">{complaint.content}</p>
                         </div>
 
-                        {complaint.employee_name && (
-                            <>
-                                <h2 className="text-lg font-semibold mt-4 mb-2">Thông tin người xử lý</h2>
-                                <div className="space-y-2">
-                                    <p><span className="font-medium">Mã nhân viên:</span> {complaint.employee_id}</p>
-                                    <p><span className="font-medium">Họ và tên:</span> {complaint.employee_name}</p>
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-700 mb-2">Thông tin bổ sung</h2>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm text-gray-500">Ngày gửi</p>
+                                    <p className="text-gray-700">
+                                        {new Date(complaint.createdAt).toLocaleDateString('vi-VN')}
+                                    </p>
                                 </div>
-                            </>
-                        )}
+                                {complaint.updatedAt && (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Cập nhật lần cuối</p>
+                                        <p className="text-gray-700">
+                                            {new Date(complaint.updatedAt).toLocaleDateString('vi-VN')}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
                         {complaint.response && (
-                            <>
-                                <h2 className="text-lg font-semibold mt-4 mb-2">Phản hồi</h2>
-                                <div className="space-y-2">
-                                    <p>{complaint.response}</p>
-                                </div>
-                            </>
+                            <div>
+                                <h2 className="text-lg font-semibold text-gray-700 mb-2">Phản hồi</h2>
+                                <p className="text-gray-600 whitespace-pre-wrap">{complaint.response}</p>
+                            </div>
                         )}
+                    </div>
+
+                    <div className="mt-8">
+                        <button
+                            onClick={() => navigate(ROUTES.COMPLAINTS.LIST)}
+                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
+                        >
+                            Quay lại danh sách
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <div className="mt-4">
-                <Link
-                    to="/complaints"
-                    className="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
-                >
-                    Quay lại
-                </Link>
-            </div>
         </div>
     );
-}
+};
 
 export default ComplaintDetailPage; 

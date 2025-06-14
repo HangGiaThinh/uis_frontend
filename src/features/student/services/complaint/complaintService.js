@@ -1,23 +1,42 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../../../services/api';
+import { API_ENDPOINTS } from '../../../../constants';
 
-const getComplaints = async () => {
-    const response = await api.get('/v1/student/complaints');
-    return response.data;
+// Get all complaints
+export const useComplaints = () => {
+  return useQuery({
+    queryKey: ['complaints'],
+    queryFn: async () => {
+      const response = await api.get(API_ENDPOINTS.COMPLAINTS.LIST);
+      return response.data.data;
+    }
+  });
 };
 
-const getComplaintDetail = async (id) => {
-    const response = await api.get(`/v1/student/complaints/${id}`);
-    return response.data;
+// Get complaint by ID
+export const useComplaint = (id) => {
+  return useQuery({
+    queryKey: ['complaint', id],
+    queryFn: async () => {
+      const response = await api.get(API_ENDPOINTS.COMPLAINTS.DETAIL(id));
+      return response.data.data;
+    },
+    enabled: !!id
+  });
 };
 
-const createComplaint = async (data) => {
-    const response = await api.post('/v1/student/complaints', data);
-    return response.data;
-};
+// Create new complaint
+export const useCreateComplaint = () => {
+  const queryClient = useQueryClient();
 
-export {
-    getComplaints,
-    getComplaintDetail,
-    createComplaint
+  return useMutation({
+    mutationFn: async (data) => {
+      const response = await api.post(API_ENDPOINTS.COMPLAINTS.CREATE, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['complaints']);
+    }
+  });
 }; 
  
