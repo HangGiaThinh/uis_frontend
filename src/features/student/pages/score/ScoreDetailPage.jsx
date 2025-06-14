@@ -265,23 +265,13 @@ function ScoreDetailPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <div className="text-center mb-4">
-                <h1 className="text-2xl font-bold">HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
-                <h2 className="text-xl">CƠ SỞ TẠI TP. HỒ CHÍ MINH</h2>
-                <p className="font-bold">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
-                <p>Độc lập - Tự do - Hạnh phúc</p>
-                <h1 className="text-2xl font-bold mt-4">PHIẾU ĐÁNH GIÁ KẾT QUẢ RÈN LUYỆN</h1>
-                <p>Học kỳ: I     Năm học: 2024-2025</p>
-                <p>Họ và tên: .....................................     Ngày sinh: .........................</p>
-                <p>Mã số sinh viên: .............................     Lớp: .....................................</p>
-            </div>
+           
             <form onSubmit={handleSubmit(onSubmitWithValidation)} className="overflow-x-auto">
                 <table className="table w-full border-collapse border border-gray-300">
                     <thead>
                         <tr className="bg-gray-100">
                             <th className="border border-gray-300 p-2">Nội dung đánh giá</th>
                             <th className="border border-gray-300 p-2">Điểm quy định</th>
-                            <th className="border border-gray-300 p-2">Điểm đánh giá</th>
                             <th className="border border-gray-300 p-2">Sinh viên đánh giá</th>
                             <th className="border border-gray-300 p-2">Tập thể lớp đánh giá</th>
                             <th className="border border-gray-300 p-2">CVHT đánh giá</th>
@@ -292,7 +282,7 @@ function ScoreDetailPage() {
                             if (item.isParent) {
                                 return (
                                     <tr key={`${item.criterionName}_${index}`} className="bg-gray-200">
-                                        <td className="border border-gray-300 p-2" colSpan={6}>
+                                        <td className="border border-gray-300 p-2" colSpan={5}>
                                             <span className="font-bold"> {item.criterionName}</span>
                                             <br />
                                             <span>Mức điểm tối đa Tiêu chí {item.serial}: {item.maxScore} điểm</span>
@@ -302,7 +292,7 @@ function ScoreDetailPage() {
                             } else if (item.evaluation_content_details) {
                                 return (
                                     <tr key={`${item.id}_${index}`}>
-                                        <td className="border border-gray-300 p-2" colSpan={6}>
+                                        <td className="border border-gray-300 p-2" colSpan={5}>
                                             <span className="font-semibold">{item.content}</span>
                                             <span className="ml-4 font-medium">
                                                 Điểm hiện tại: {selectedScores[item.id] !== undefined ? selectedScores[item.id] : (item.id === 19 ? 5 : (item.id === 2 ? 0 : (item.max_score || 5)))}
@@ -411,13 +401,188 @@ function ScoreDetailPage() {
                                             )}
                                         </td>
                                         <td className="border border-gray-300 p-2">
-                                            {item.id === 21 ? 5 + (selectedScores[item.id] || 0) : (item.student_score !== null && item.student_score !== undefined ? item.student_score : (item.total_student_score !== null && item.total_student_score !== undefined ? item.total_student_score : 0))}
+                                            {[27, 33].includes(item.id) ? (
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedScores[`class_${item.id}`] === -10}
+                                                        onChange={(e) => {
+                                                            const newScore = e.target.checked ? -10 : 0;
+                                                            setValue(`class_score_${item.parentId}_${item.id}`, newScore);
+                                                            const newSelectedScores = { ...selectedScores, [`class_${item.id}`]: newScore };
+                                                            setSelectedScores(newSelectedScores);
+                                                            updateTotalScore(newSelectedScores);
+                                                        }}
+                                                        disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    />
+                                                </label>
+                                            ) : item.id === 21 ? (
+                                                <input
+                                                    type="number"
+                                                    {...register(`class_score_${item.parentId}_${item.id}`, {
+                                                        min: -5,
+                                                        max: 0,
+                                                        valueAsNumber: true,
+                                                    })}
+                                                    className="input input-bordered w-full"
+                                                    disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    defaultValue={item.class_committee_score || 0}
+                                                    onChange={(e) => {
+                                                        const newScore = parseInt(e.target.value) || 0;
+                                                        setValue(`class_score_${item.parentId}_${item.id}`, newScore);
+                                                        const newSelectedScores = { ...selectedScores, [`class_${item.id}`]: newScore };
+                                                        setSelectedScores(newSelectedScores);
+                                                        updateTotalScore(newSelectedScores);
+                                                    }}
+                                                />
+                                            ) : [19, 21].includes(item.parentId) ? (
+                                                <input
+                                                    type="number"
+                                                    {...register(`class_score_${item.parentId}_${item.id}`, {
+                                                        min: -(item.max_score || 5),
+                                                        max: 0,
+                                                        valueAsNumber: true,
+                                                    })}
+                                                    className="input input-bordered w-full"
+                                                    disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    defaultValue={item.class_committee_score || 0}
+                                                    onChange={(e) => {
+                                                        const newScore = parseInt(e.target.value) || 0;
+                                                        setValue(`class_score_${item.parentId}_${item.id}`, newScore);
+                                                        handleCheckboxChange({ target: { checked: newScore !== 0 } }, newScore, item.id, item.parentId);
+                                                    }}
+                                                />
+                                            ) : [2, 9, 16].includes(item.parentId) ? (
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        name={`class_${item.id}`}
+                                                        checked={selectedScores[`class_${item.id}`] === item.score}
+                                                        onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
+                                                        disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    />
+                                                </label>
+                                            ) : (
+                                                <input
+                                                    type="number"
+                                                    {...register(`class_score_${item.parentId}_${item.id}`, {
+                                                        min: -10,
+                                                        max: item.maxScore || 10,
+                                                        valueAsNumber: true,
+                                                        validate: value => (value <= (item.maxScore || 10)) || 'Điểm vượt quá mức quy định',
+                                                    })}
+                                                    className="input input-bordered w-full"
+                                                    disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    defaultValue={item.class_committee_score || 0}
+                                                    onChange={(e) => {
+                                                        const newScore = parseInt(e.target.value) || 0;
+                                                        setValue(`class_score_${item.parentId}_${item.id}`, newScore);
+                                                        updateTotalScore(selectedScores);
+                                                        if (newScore > (item.maxScore || 10)) {
+                                                            setError(`class_score_${item.parentId}_${item.id}`, { type: 'manual', message: 'Điểm vượt quá mức quy định' });
+                                                        } else {
+                                                            setError(`class_score_${item.parentId}_${item.id}`, undefined);
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                            {errors[`class_score_${item.parentId}_${item.id}`] && (
+                                                <span className="text-red-500 text-xs">
+                                                    {errors[`class_score_${item.parentId}_${item.id}`].message}
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="border border-gray-300 p-2">
-                                            {item.class_committee_score !== null && item.class_committee_score !== undefined ? item.class_committee_score : 0}
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                            {item.academic_advisor_score !== null && item.academic_advisor_score !== undefined ? item.academic_advisor_score : 0}
+                                            {[27, 33].includes(item.id) ? (
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedScores[`cvht_${item.id}`] === -10}
+                                                        onChange={(e) => {
+                                                            const newScore = e.target.checked ? -10 : 0;
+                                                            setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
+                                                            const newSelectedScores = { ...selectedScores, [`cvht_${item.id}`]: newScore };
+                                                            setSelectedScores(newSelectedScores);
+                                                            updateTotalScore(newSelectedScores);
+                                                        }}
+                                                        disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    />
+                                                </label>
+                                            ) : item.id === 21 ? (
+                                                <input
+                                                    type="number"
+                                                    {...register(`cvht_score_${item.parentId}_${item.id}`, {
+                                                        min: -5,
+                                                        max: 0,
+                                                        valueAsNumber: true,
+                                                    })}
+                                                    className="input input-bordered w-full"
+                                                    disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    defaultValue={item.academic_advisor_score || 0}
+                                                    onChange={(e) => {
+                                                        const newScore = parseInt(e.target.value) || 0;
+                                                        setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
+                                                        const newSelectedScores = { ...selectedScores, [`cvht_${item.id}`]: newScore };
+                                                        setSelectedScores(newSelectedScores);
+                                                        updateTotalScore(newSelectedScores);
+                                                    }}
+                                                />
+                                            ) : [19, 21].includes(item.parentId) ? (
+                                                <input
+                                                    type="number"
+                                                    {...register(`cvht_score_${item.parentId}_${item.id}`, {
+                                                        min: -(item.max_score || 5),
+                                                        max: 0,
+                                                        valueAsNumber: true,
+                                                    })}
+                                                    className="input input-bordered w-full"
+                                                    disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    defaultValue={item.academic_advisor_score || 0}
+                                                    onChange={(e) => {
+                                                        const newScore = parseInt(e.target.value) || 0;
+                                                        setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
+                                                        handleCheckboxChange({ target: { checked: newScore !== 0 } }, newScore, item.id, item.parentId);
+                                                    }}
+                                                />
+                                            ) : [2, 9, 16].includes(item.parentId) ? (
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        name={`cvht_${item.id}`}
+                                                        checked={selectedScores[`cvht_${item.id}`] === item.score}
+                                                        onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
+                                                        disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    />
+                                                </label>
+                                            ) : (
+                                                <input
+                                                    type="number"
+                                                    {...register(`cvht_score_${item.parentId}_${item.id}`, {
+                                                        min: -10,
+                                                        max: item.maxScore || 10,
+                                                        valueAsNumber: true,
+                                                        validate: value => (value <= (item.maxScore || 10)) || 'Điểm vượt quá mức quy định',
+                                                    })}
+                                                    className="input input-bordered w-full"
+                                                    disabled={data.data.status === 'WAIT_STUDENT'}
+                                                    defaultValue={item.academic_advisor_score || 0}
+                                                    onChange={(e) => {
+                                                        const newScore = parseInt(e.target.value) || 0;
+                                                        setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
+                                                        updateTotalScore(selectedScores);
+                                                        if (newScore > (item.maxScore || 10)) {
+                                                            setError(`cvht_score_${item.parentId}_${item.id}`, { type: 'manual', message: 'Điểm vượt quá mức quy định' });
+                                                        } else {
+                                                            setError(`cvht_score_${item.parentId}_${item.id}`, undefined);
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                            {errors[`cvht_score_${item.parentId}_${item.id}`] && (
+                                                <span className="text-red-500 text-xs">
+                                                    {errors[`cvht_score_${item.parentId}_${item.id}`].message}
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 );
@@ -426,6 +591,7 @@ function ScoreDetailPage() {
                         <tr>
                             <td className="border border-gray-300 p-2 font-bold">TỔNG CỘNG</td>
                             <td className="border border-gray-300 p-2">{totalScore}</td>
+                            <td className="border border-gray-300 p-2">-</td>
                             <td className="border border-gray-300 p-2">-</td>
                             <td className="border border-gray-300 p-2">-</td>
                         </tr>
