@@ -1,0 +1,158 @@
+POST: http://localhost:8080/api/v1/student/training-scores/6
+﻿
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Body
+raw (json)
+{
+    "training_score_details": [
+        {
+            "evaluation_content_id": 1,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 2,
+            "score": 10
+        },
+	{
+            "evaluation_content_id": 3,
+            "score": 10
+        },
+        {
+            "evaluation_content_id": 4,
+            "score": 0
+        },
+	{
+            "evaluation_content_id": 5,
+            "score": 0
+        },
+	{
+            "evaluation_content_id": 6,
+            "score": 0
+        },
+	{
+            "evaluation_content_id": 7,
+            "score": 0
+        },
+	{
+            "evaluation_content_id": 8,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 9,
+            "score": 2
+        },
+        {
+            "evaluation_content_id": 10,
+            "score": -2
+        },
+	{
+            "evaluation_content_id": 11,
+            "score": 0
+        },
+	{
+            "evaluation_content_id": 12,
+            "score": 0
+        },
+	{
+            "evaluation_content_id": 13,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 14,
+            "score": 2
+        },
+        {
+            "evaluation_content_id": 15,
+            "score": 1
+        },
+        {
+            "evaluation_content_id": 16,
+            "score": 15
+        },
+	{
+            "evaluation_content_id": 17,
+            "score": 0
+        },
+	{
+            "evaluation_content_id": 18,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 19,
+            "score": 4
+        },
+        {
+            "evaluation_content_id": 20,
+            "score": -1
+        },
+        {
+            "evaluation_content_id": 21,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 22,
+            "score": -2
+        },
+        {
+            "evaluation_content_id": 23,
+            "score": 10
+        },
+        {
+            "evaluation_content_id": 24,
+            "score": 4
+        },
+        {
+            "evaluation_content_id": 25,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 26,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 27,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 28,
+            "score": 8
+        },
+        {
+            "evaluation_content_id": 29,
+            "score": 5
+        },
+        {
+            "evaluation_content_id": 30,
+            "score": 5
+        },
+        {
+            "evaluation_content_id": 31,
+            "score": 5
+        },
+        {
+            "evaluation_content_id": 32,
+            "score": 2
+        },
+        {
+            "evaluation_content_id": 33,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 34,
+            "score": 4
+        },
+        {
+            "evaluation_content_id": 35,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 36,
+            "score": 3
+        }
+    ]
+}

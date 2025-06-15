@@ -1,615 +1,437 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { useParams, Link } from 'react-router-dom';
-import { getTrainingScoreDetail, submitTrainingScore } from "../../services/score/scoreService";
-import { useForm } from 'react-hook-form';
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
 
-function ScoreDetailPage() {
-    const { id } = useParams();
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['trainingScoreDetail', id],
-        queryFn: () => getTrainingScoreDetail(id),
-    });
+const ScoreDetailPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [trainingScoreData, setTrainingScoreData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [selectedRadio1_2, setSelectedRadio1_2] = useState(null);
 
-    const { register, handleSubmit, setValue, getValues, formState: { errors }, trigger, setError } = useForm({
-        defaultValues: {},
-    });
-
-    const mutation = useMutation({
-        mutationFn: (formData) => {
-            const payload = {
-                training_score_id: parseInt(id),
-                training_score_details: allItems
-                    .filter(item => !item.isParent && item.id)
-                    .map(item => ({
-                        evaluation_content_id: item.id,
-                        score: parseInt(getValues(`score_${item.parentId}_${item.id}`) || 0)
-                    }))
-            };
-            return submitTrainingScore(id, payload);
-        },
-        onSuccess: () => {
-            alert('Chấm điểm thành công!');
-            queryClient.refetchQueries(['trainingScoreDetail', id]);
-        },
-        onError: (error) => alert('Lỗi khi chấm điểm: ' + error.message),
-    });
-
-    const [selectedScores, setSelectedScores] = useState({});
-    const [totalScore, setTotalScore] = useState(0);
-    const [isClassLeader, setIsClassLeader] = useState(false); // Mặc định là sinh viên thường
-
-    useEffect(() => {
-        if (data && data.data.criterions) {
-            let initialTotal = 0;
-            const newSelectedScores = { ...selectedScores };
-
-            // Khởi tạo điểm cho tất cả mục con và cha
-            data.data.criterions.forEach(criterion => {
-                criterion.evaluation_contents.forEach(content => {
-                    if (content.evaluation_content_details) {
-                        content.evaluation_content_details.forEach(detail => {
-                            const score = detail.student_score || detail.total_student_score || 0;
-                            setValue(`score_${criterion.id}_${detail.id}`, score);
-                            newSelectedScores[detail.id] = score;
-                            initialTotal += score;
-                        });
-                    } else {
-                        const score = content.student_score || content.total_student_score || 0;
-                        setValue(`score_${criterion.id}_${content.id}`, score);
-                        newSelectedScores[content.id] = score;
-                        initialTotal += score;
-                    }
-                });
-            });
-
-            // Xử lý điểm mặc định cho các mục cha
-            const score12 = data.data.criterions.find(c => c.id === 1)?.evaluation_contents.find(c => c.id === 2);
-            if (score12 && score12.evaluation_content_details) {
-                const maxChildScore = Math.max(...[3, 4, 5, 6, 7, 8].map(id => newSelectedScores[id] || 0));
-                const parentScore = maxChildScore > 0 ? Math.min(maxChildScore, score12.max_score || 10) : 0;
-                newSelectedScores[2] = parentScore;
-                setValue(`score_1_2`, parentScore);
-                initialTotal += parentScore;
-            }
-
-            const score13 = data.data.criterions.find(c => c.id === 1)?.evaluation_contents.find(c => c.id === 9);
-            if (score13 && score13.evaluation_content_details) {
-                const childSum = [10, 11, 12, 13, 14, 15].reduce((sum, id) => sum + (newSelectedScores[id] || 0), 0);
-                const parentScore = childSum !== 0 ? Math.min(4 + childSum, score13.max_score || 10) : 4;
-                newSelectedScores[9] = parentScore;
-                setValue(`score_1_9`, parentScore);
-                initialTotal += parentScore;
-            }
-
-            const score21 = data.data.criterions.find(c => c.id === 2)?.evaluation_contents.find(c => c.id === 16);
-            if (score21 && score21.evaluation_content_details) {
-                const maxScore = score21.max_score || 0;
-                const penalty = [17, 18, 19, 20, 21, 22].reduce((sum, id) => sum + (newSelectedScores[id] || 0), 0);
-                // Đảm bảo điểm không âm và không vượt quá maxScore
-                const parentScore = Math.min(maxScore, Math.max(0, maxScore + penalty));
-                newSelectedScores[16] = parentScore;
-                setValue(`score_2_16`, parentScore);
-                initialTotal += parentScore;
-            }
-
-            const score22 = data.data.criterions.find(c => c.id === 2)?.evaluation_contents.find(c => c.id === 19);
-            if (score22 && score22.evaluation_content_details) {
-                const maxScore = score22.max_score || 0;
-                const penalty = score22.evaluation_content_details.reduce((sum, detail) => sum + (detail.student_score || 0), 0);
-                const parentScore = Math.max(0, maxScore + penalty);
-                newSelectedScores[19] = parentScore;
-                setValue(`score_2_19`, parentScore);
-                initialTotal += parentScore;
-            }
-
-            const score23 = data.data.criterions.find(c => c.id === 2)?.evaluation_contents.find(c => c.id === 21);
-            if (score23) {
-                const maxScore = score23.max_score || 0;
-                const adjustment = score23.evaluation_content_details[0]?.student_score || parseInt(getValues(`score_${2}_${score23.evaluation_content_details[0]?.id}`) || 0);
-                const parentScore = Math.max(0, Math.min(maxScore, maxScore + adjustment));
-                newSelectedScores[21] = parentScore;
-                setValue(`score_2_21`, parentScore);
-                initialTotal += parentScore;
-            }
-
-            setSelectedScores(newSelectedScores);
-            setTotalScore(initialTotal);
-        }
-    }, [data, setValue]);
-
-    const handleCheckboxChange = (e, score, contentId, parentId) => {
-        const newSelectedScores = { ...selectedScores };
-        const isChecked = e.target.checked;
-
-        // Cập nhật điểm cho mục con
-        if (parentId === 2) { // 1.2
-            // Reset tất cả điểm của các mục con về 0
-            [3, 4, 5, 6, 7, 8].forEach(id => {
-                newSelectedScores[id] = 0;
-                setValue(`score_${parentId}_${id}`, 0);
-            });
-
-            // Nếu checkbox được chọn, cập nhật điểm cho mục con đó
-            if (isChecked) {
-                newSelectedScores[contentId] = score;
-                setValue(`score_${parentId}_${contentId}`, score);
-            }
-
-            // Tính điểm cho mục cha
-            const parentContent = allItems.find(item => item.id === parentId);
-            const maxScore = parentContent?.max_score || 10;
-            const parentScore = Math.min(maxScore, Math.max(...[3, 4, 5, 6, 7, 8].map(id => newSelectedScores[id] || 0)));
-            newSelectedScores[2] = parentScore;
-            setValue(`score_1_2`, parentScore);
-        } else if (parentId === 16) { // 2.1
-            // Reset tất cả điểm của các mục con về 0
-            [17, 18, 19, 20, 21, 22].forEach(id => {
-                newSelectedScores[id] = 0;
-                setValue(`score_${parentId}_${id}`, 0);
-            });
-
-            // Nếu checkbox được chọn, cập nhật điểm cho mục con đó
-            if (isChecked) {
-                newSelectedScores[contentId] = score;
-                setValue(`score_${parentId}_${contentId}`, score);
-            }
-
-            // Tính điểm cho mục cha
-            const parentContent = allItems.find(item => item.id === parentId);
-            const maxScore = parentContent?.max_score || 15;
-            const penalty = [17, 18, 19, 20, 21, 22].reduce((sum, id) => {
-                const isSelected = newSelectedScores[id] !== undefined && newSelectedScores[id] !== 0;
-                return sum + (isSelected ? newSelectedScores[id] : 0);
-            }, 0);
-            const parentScore = Math.min(maxScore, Math.max(0, maxScore + penalty));
-            newSelectedScores[16] = parentScore;
-            setValue(`score_2_16`, parentScore);
-        } else if (parentId === 19) { // 2.2
-            const parentContent = allItems.find(item => item.id === parentId);
-            const maxScore = parentContent?.max_score || 5;
-            const penalty = parseInt(getValues(`score_${parentId}_${contentId}`) || 0);
-            const parentScore = Math.max(0, maxScore + penalty);
-            newSelectedScores[19] = parentScore;
-            setValue(`score_2_19`, parentScore);
-        }
-
-        updateTotalScore(newSelectedScores);
-        setSelectedScores(newSelectedScores);
-        trigger();
-    };
-
-    const updateTotalScore = (scores) => {
-        let newTotal = 0;
-        allItems.forEach(item => {
-            if (!item.isParent && item.id) {
-                // Bỏ qua việc tính điểm của các mục con trong phần 1.2 (id từ 3-8)
-                if (item.parentId === 2 && [3, 4, 5, 6, 7, 8].includes(item.id)) {
-                    return;
-                }
-                const field = `score_${item.parentId}_${item.id}`;
-                const score = parseInt(getValues(field) || 0);
-                newTotal += score;
-            }
-        });
-        setTotalScore(newTotal);
-    };
-
-    const validateForm = () => {
-        let isValid = true;
-        allItems.forEach(item => {
-            if (!item.isParent && item.id) {
-                const field = `score_${item.parentId}_${item.id}`;
-                const score = getValues(field);
-                // Chỉ validate giới hạn số âm/dương
-                if ([19, 21, 27, 33].includes(item.id) && score > 0) {
-                    setError(field, { type: 'validate', message: 'Chỉ được nhập số âm hoặc 0 cho điểm điều chỉnh' });
-                    isValid = false;
-                }
-                if (![19, 21, 27, 33].includes(item.id) && score < 0) {
-                    setError(field, { type: 'validate', message: 'Chỉ được nhập số dương hoặc 0 cho điểm' });
-                    isValid = false;
-                }
-            }
-        });
-        return isValid;
-    };
-
-    const onSubmitWithValidation = async (data) => {
-        // Bỏ qua validation khi gửi điểm
-        mutation.mutate(data);
-    };
-
-    if (isLoading) return <div className="container mx-auto p-4">Đang tải...</div>;
-    if (error) return <div className="container mx-auto p-4">Lỗi: {error.message}</div>;
-    if (!data?.data?.criterions || data.data.criterions.length === 0) {
-        return <div className="container mx-auto p-4">Không có dữ liệu chi tiết để hiển thị.</div>;
+  const getStatusInVietnamese = (status) => {
+    switch (status) {
+      case 'WAIT_STUDENT':
+        return 'Chờ sinh viên';
+      case 'WAIT_CLASS_COMMITTEE':
+        return 'Chờ ban cán sự';
+      case 'WAIT_ADVISOR':
+        return 'Chờ CVHT';
+      case 'WAIT_FACULTY':
+        return 'Chờ khoa';
+      case 'WAIT_DEPARTMENT':
+        return 'Chờ phòng CTSV';
+      case 'COMPLETED':
+        return 'Hoàn thành';
+      default:
+        return status;
     }
+  };
 
-    const allItems = data.data.criterions.flatMap((criterion, criterionIndex) => {
-        const parentItem = {
-            isParent: true,
-            criterionName: criterion.criterion_name,
-            maxScore: criterion.id === 3 ? 20 : criterion.max_score,
-            serial: `${criterionIndex + 1}`,
-        };
+  useEffect(() => {
+    const fetchTrainingScore = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        setUserRole(role);
 
-        const children = criterion.evaluation_contents.flatMap((content, contentIndex) => {
-            const parentContentItem = {
-                ...content,
-                criterionName: criterion.criterion_name,
-                isParent: false,
-                maxScore: content.max_score,
-                parentId: criterion.id,
-                serial: `${criterionIndex + 1}.${contentIndex + 1}`,
-            };
-            if (content.evaluation_content_details) {
-                return [
-                    parentContentItem,
-                    ...content.evaluation_content_details.map((detail, detailIndex) => ({
-                        ...detail,
-                        parentContent: content.content,
-                        criterionName: criterion.criterion_name,
-                        isParent: false,
-                        maxScore: detail.score,
-                        parentId: content.id,
-                        serial: null,
-                    })),
-                ];
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/student/training-scores/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setTrainingScoreData(response.data.data);
+
+        const criterion1 = response.data.data.criterions.find(c => c.id === 1);
+        if (criterion1) {
+          const content2 = criterion1.evaluation_contents.find(c => c.id === 2);
+          if (content2 && content2.evaluation_content_details) {
+            const selectedNonZeroDetail = content2.evaluation_content_details.find(
+              d => d.id >= 3 && d.id <= 6 && d.student_score === d.score && d.score !== 0
+            );
+
+            if (selectedNonZeroDetail) {
+              setSelectedRadio1_2(selectedNonZeroDetail.id);
+            } else {
+              const selectedZeroDetail = content2.evaluation_content_details.find(
+                d => d.id === 7 && d.student_score === d.score && d.score === 0
+              );
+              const anyOtherRadioSelectedNonZero = content2.evaluation_content_details.some(
+                d => d.id >= 3 && d.id <= 6 && d.student_score === d.score && d.score !== 0
+              );
+
+              if (selectedZeroDetail && !anyOtherRadioSelectedNonZero) {
+                setSelectedRadio1_2(selectedZeroDetail.id);
+              } else {
+                setSelectedRadio1_2(null); // No radio selected initially
+              }
             }
-            return [parentContentItem];
+          }
+        }
+
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrainingScore();
+  }, [id]);
+
+  const handleScoreChange = (contentId, detailId, value) => {
+    setTrainingScoreData(prevData => {
+      const newCriterions = prevData.criterions.map(criterion => {
+        const newEvaluationContents = criterion.evaluation_contents.map(content => {
+          if (content.id === contentId) {
+            if (detailId === null) {
+              let newScore = parseInt(value);
+              if (isNaN(newScore)) newScore = 0;
+              if (newScore > content.max_score) newScore = content.max_score;
+              if (newScore < (content.max_score < 0 ? content.max_score : 0)) newScore = (content.max_score < 0 ? content.max_score : 0);
+              return {
+                ...content,
+                total_student_score: newScore,
+              };
+            } else if (content.evaluation_content_details) {
+              let newDetails = [...content.evaluation_content_details];
+
+              if (content.id === 2) {
+                if (detailId === 8) {
+                  newDetails = newDetails.map(detail => {
+                    if (detail.id === 8) {
+                      return { ...detail, student_score: value ? detail.score : 0 };
+                    }
+                    return detail;
+                  });
+                } else {
+                  setSelectedRadio1_2(detailId);
+                  newDetails = newDetails.map(detail => {
+                    if (detail.id >= 3 && detail.id <= 7) {
+                      return { ...detail, student_score: detail.id === detailId ? detail.score : 0 };
+                    }
+                    return detail;
+                  });
+                }
+              } else {
+                newDetails = newDetails.map(detail => {
+                  if (detail.id === detailId) {
+                    if ((content.id === 19 && detail.id === 20) || (content.id === 21 && detail.id === 22)) {
+                      let incidents = parseInt(value);
+                      if (isNaN(incidents)) incidents = 0;
+                      if (incidents < 0) incidents = 0;
+                      if (incidents > 5) incidents = 5;
+                      return { ...detail, student_score: incidents * detail.score };
+                    } else {
+                      return { ...detail, student_score: value ? detail.score : 0 };
+                    }
+                  }
+                  return detail;
+                });
+              }
+
+              let newTotalStudentScore;
+              if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
+                const deductions = newDetails.reduce((sum, detail) => sum + detail.student_score, 0);
+                newTotalStudentScore = Math.max(0, content.max_score + deductions);
+              } else {
+                newTotalStudentScore = newDetails.reduce((sum, detail) => sum + detail.student_score, 0);
+              }
+
+              return {
+                ...content,
+                evaluation_content_details: newDetails,
+                total_student_score: newTotalStudentScore,
+              };
+            }
+          }
+          return content;
         });
 
-        return [parentItem, ...children];
-    });
+        return {
+          ...criterion,
+          evaluation_contents: newEvaluationContents,
+        };
+      });
 
-    return (
-        <div className="container mx-auto p-4">
-           
-            <form onSubmit={handleSubmit(onSubmitWithValidation)} className="overflow-x-auto">
-                <table className="table w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border border-gray-300 p-2">Nội dung đánh giá</th>
-                            <th className="border border-gray-300 p-2">Điểm quy định</th>
-                            <th className="border border-gray-300 p-2">Sinh viên đánh giá</th>
-                            <th className="border border-gray-300 p-2">Tập thể lớp đánh giá</th>
-                            <th className="border border-gray-300 p-2">CVHT đánh giá</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {allItems.map((item, index) => {
-                            if (item.isParent) {
-                                return (
-                                    <tr key={`${item.criterionName}_${index}`} className="bg-gray-200">
-                                        <td className="border border-gray-300 p-2" colSpan={5}>
-                                            <span className="font-bold"> {item.criterionName}</span>
-                                            <br />
-                                            <span>Mức điểm tối đa Tiêu chí {item.serial}: {item.maxScore} điểm</span>
-                                        </td>
-                                    </tr>
-                                );
-                            } else if (item.evaluation_content_details) {
-                                return (
-                                    <tr key={`${item.id}_${index}`}>
-                                        <td className="border border-gray-300 p-2" colSpan={5}>
-                                            <span className="font-semibold">{item.content}</span>
-                                            <span className="ml-4 font-medium">
-                                                Điểm hiện tại: {selectedScores[item.id] !== undefined ? selectedScores[item.id] : (item.id === 19 ? 5 : (item.id === 2 ? 0 : (item.max_score || 5)))}
-                                            </span>
-                                            <span className="ml-4 font-medium">
-                                                Điểm tối đa: {item.max_score || 0}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                );
-                            } else {
-                                return (
-                                    <tr key={`${item.id || item.criterionName}_${index}`}>
-                                        <td className="border border-gray-300 p-2 pl-8">{item.content || 'Chưa có nội dung'}</td>
-                                        <td className="border border-gray-300 p-2">{item.maxScore || 0}</td>
-                                        <td className="border border-gray-300 p-2">
-                                            {[27, 33].includes(item.id) ? (
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedScores[item.id] === -10}
-                                                        onChange={(e) => {
-                                                            const newScore = e.target.checked ? -10 : 0;
-                                                            setValue(`score_${item.parentId}_${item.id}`, newScore);
-                                                            const newSelectedScores = { ...selectedScores, [item.id]: newScore };
-                                                            setSelectedScores(newSelectedScores);
-                                                            updateTotalScore(newSelectedScores);
-                                                        }}
-                                                        disabled={data.data.status !== 'WAIT_STUDENT'}
-                                                    />
-                                                </label>
-                                            ) : item.id === 21 ? (
-                                                <input
-                                                    type="number"
-                                                    {...register(`score_${item.parentId}_${item.id}`, {
-                                                        min: -5,
-                                                        max: 0,
-                                                        valueAsNumber: true,
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status !== 'WAIT_STUDENT'}
-                                                    defaultValue={item.student_score || item.total_student_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`score_${item.parentId}_${item.id}`, newScore);
-                                                        const newSelectedScores = { ...selectedScores, [item.id]: newScore };
-                                                        setSelectedScores(newSelectedScores);
-                                                        updateTotalScore(newSelectedScores);
-                                                    }}
-                                                />
-                                            ) : [19, 21].includes(item.parentId) ? (
-                                                <input
-                                                    type="number"
-                                                    {...register(`score_${item.parentId}_${item.id}`, {
-                                                        min: -(item.max_score || 5),
-                                                        max: 0,
-                                                        valueAsNumber: true,
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status !== 'WAIT_STUDENT'}
-                                                    defaultValue={item.student_score || item.total_student_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`score_${item.parentId}_${item.id}`, newScore);
-                                                        handleCheckboxChange({ target: { checked: newScore !== 0 } }, newScore, item.id, item.parentId);
-                                                    }}
-                                                />
-                                            ) : [2, 9, 16].includes(item.parentId) ? (
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        name={item.id}
-                                                        checked={selectedScores[item.id] === item.score}
-                                                        onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
-                                                        disabled={data.data.status !== 'WAIT_STUDENT'}
-                                                    />
-                                                </label>
-                                            ) : (
-                                                <input
-                                                    type="number"
-                                                    {...register(`score_${item.parentId}_${item.id}`, {
-                                                        min: -10,
-                                                        max: item.maxScore || 10,
-                                                        valueAsNumber: true,
-                                                        validate: value => (value <= (item.maxScore || 10)) || 'Điểm vượt quá mức quy định',
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status !== 'WAIT_STUDENT'}
-                                                    defaultValue={item.student_score || item.total_student_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`score_${item.parentId}_${item.id}`, newScore);
-                                                        updateTotalScore(selectedScores);
-                                                        if (newScore > (item.maxScore || 10)) {
-                                                            setError(`score_${item.parentId}_${item.id}`, { type: 'manual', message: 'Điểm vượt quá mức quy định' });
-                                                        } else {
-                                                            setError(`score_${item.parentId}_${item.id}`, undefined);
-                                                        }
-                                                    }}
-                                                />
-                                            )}
-                                            {errors[`score_${item.parentId}_${item.id}`] && (
-                                                <span className="text-red-500 text-xs">
-                                                    {errors[`score_${item.parentId}_${item.id}`].message}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                            {[27, 33].includes(item.id) ? (
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedScores[`class_${item.id}`] === -10}
-                                                        onChange={(e) => {
-                                                            const newScore = e.target.checked ? -10 : 0;
-                                                            setValue(`class_score_${item.parentId}_${item.id}`, newScore);
-                                                            const newSelectedScores = { ...selectedScores, [`class_${item.id}`]: newScore };
-                                                            setSelectedScores(newSelectedScores);
-                                                            updateTotalScore(newSelectedScores);
-                                                        }}
-                                                        disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    />
-                                                </label>
-                                            ) : item.id === 21 ? (
-                                                <input
-                                                    type="number"
-                                                    {...register(`class_score_${item.parentId}_${item.id}`, {
-                                                        min: -5,
-                                                        max: 0,
-                                                        valueAsNumber: true,
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    defaultValue={item.class_committee_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`class_score_${item.parentId}_${item.id}`, newScore);
-                                                        const newSelectedScores = { ...selectedScores, [`class_${item.id}`]: newScore };
-                                                        setSelectedScores(newSelectedScores);
-                                                        updateTotalScore(newSelectedScores);
-                                                    }}
-                                                />
-                                            ) : [19, 21].includes(item.parentId) ? (
-                                                <input
-                                                    type="number"
-                                                    {...register(`class_score_${item.parentId}_${item.id}`, {
-                                                        min: -(item.max_score || 5),
-                                                        max: 0,
-                                                        valueAsNumber: true,
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    defaultValue={item.class_committee_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`class_score_${item.parentId}_${item.id}`, newScore);
-                                                        handleCheckboxChange({ target: { checked: newScore !== 0 } }, newScore, item.id, item.parentId);
-                                                    }}
-                                                />
-                                            ) : [2, 9, 16].includes(item.parentId) ? (
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        name={`class_${item.id}`}
-                                                        checked={selectedScores[`class_${item.id}`] === item.score}
-                                                        onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
-                                                        disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    />
-                                                </label>
-                                            ) : (
-                                                <input
-                                                    type="number"
-                                                    {...register(`class_score_${item.parentId}_${item.id}`, {
-                                                        min: -10,
-                                                        max: item.maxScore || 10,
-                                                        valueAsNumber: true,
-                                                        validate: value => (value <= (item.maxScore || 10)) || 'Điểm vượt quá mức quy định',
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    defaultValue={item.class_committee_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`class_score_${item.parentId}_${item.id}`, newScore);
-                                                        updateTotalScore(selectedScores);
-                                                        if (newScore > (item.maxScore || 10)) {
-                                                            setError(`class_score_${item.parentId}_${item.id}`, { type: 'manual', message: 'Điểm vượt quá mức quy định' });
-                                                        } else {
-                                                            setError(`class_score_${item.parentId}_${item.id}`, undefined);
-                                                        }
-                                                    }}
-                                                />
-                                            )}
-                                            {errors[`class_score_${item.parentId}_${item.id}`] && (
-                                                <span className="text-red-500 text-xs">
-                                                    {errors[`class_score_${item.parentId}_${item.id}`].message}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                            {[27, 33].includes(item.id) ? (
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedScores[`cvht_${item.id}`] === -10}
-                                                        onChange={(e) => {
-                                                            const newScore = e.target.checked ? -10 : 0;
-                                                            setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
-                                                            const newSelectedScores = { ...selectedScores, [`cvht_${item.id}`]: newScore };
-                                                            setSelectedScores(newSelectedScores);
-                                                            updateTotalScore(newSelectedScores);
-                                                        }}
-                                                        disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    />
-                                                </label>
-                                            ) : item.id === 21 ? (
-                                                <input
-                                                    type="number"
-                                                    {...register(`cvht_score_${item.parentId}_${item.id}`, {
-                                                        min: -5,
-                                                        max: 0,
-                                                        valueAsNumber: true,
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    defaultValue={item.academic_advisor_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
-                                                        const newSelectedScores = { ...selectedScores, [`cvht_${item.id}`]: newScore };
-                                                        setSelectedScores(newSelectedScores);
-                                                        updateTotalScore(newSelectedScores);
-                                                    }}
-                                                />
-                                            ) : [19, 21].includes(item.parentId) ? (
-                                                <input
-                                                    type="number"
-                                                    {...register(`cvht_score_${item.parentId}_${item.id}`, {
-                                                        min: -(item.max_score || 5),
-                                                        max: 0,
-                                                        valueAsNumber: true,
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    defaultValue={item.academic_advisor_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
-                                                        handleCheckboxChange({ target: { checked: newScore !== 0 } }, newScore, item.id, item.parentId);
-                                                    }}
-                                                />
-                                            ) : [2, 9, 16].includes(item.parentId) ? (
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        name={`cvht_${item.id}`}
-                                                        checked={selectedScores[`cvht_${item.id}`] === item.score}
-                                                        onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
-                                                        disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    />
-                                                </label>
-                                            ) : (
-                                                <input
-                                                    type="number"
-                                                    {...register(`cvht_score_${item.parentId}_${item.id}`, {
-                                                        min: -10,
-                                                        max: item.maxScore || 10,
-                                                        valueAsNumber: true,
-                                                        validate: value => (value <= (item.maxScore || 10)) || 'Điểm vượt quá mức quy định',
-                                                    })}
-                                                    className="input input-bordered w-full"
-                                                    disabled={data.data.status === 'WAIT_STUDENT'}
-                                                    defaultValue={item.academic_advisor_score || 0}
-                                                    onChange={(e) => {
-                                                        const newScore = parseInt(e.target.value) || 0;
-                                                        setValue(`cvht_score_${item.parentId}_${item.id}`, newScore);
-                                                        updateTotalScore(selectedScores);
-                                                        if (newScore > (item.maxScore || 10)) {
-                                                            setError(`cvht_score_${item.parentId}_${item.id}`, { type: 'manual', message: 'Điểm vượt quá mức quy định' });
-                                                        } else {
-                                                            setError(`cvht_score_${item.parentId}_${item.id}`, undefined);
-                                                        }
-                                                    }}
-                                                />
-                                            )}
-                                            {errors[`cvht_score_${item.parentId}_${item.id}`] && (
-                                                <span className="text-red-500 text-xs">
-                                                    {errors[`cvht_score_${item.parentId}_${item.id}`].message}
-                                                </span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            }
-                        })}
-                        <tr>
-                            <td className="border border-gray-300 p-2 font-bold">TỔNG CỘNG</td>
-                            <td className="border border-gray-300 p-2">{totalScore}</td>
-                            <td className="border border-gray-300 p-2">-</td>
-                            <td className="border border-gray-300 p-2">-</td>
-                            <td className="border border-gray-300 p-2">-</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div className="mt-4 text-left">
-                    <button
-                        type="submit"
-                        className="btn bg-[#00AEEF] hover:bg-[#0095cc] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 mt-4"
-                        disabled={data.data.status !== 'WAIT_STUDENT' || mutation.isLoading}
-                    >
-                        {mutation.isLoading ? 'Đang gửi...' : 'Gửi điểm'}
-                    </button>
-                    <Link to="/scores" className="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 ml-2 mt-4">Quay lại</Link>
-                </div>
-            </form>
+      return {
+        ...prevData,
+        criterions: newCriterions,
+      };
+    });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const trainingScoreDetails = [];
+
+      // First, create a map of all possible IDs (1-36) with default score 0
+      const allScores = new Map();
+      for (let i = 1; i <= 36; i++) {
+        allScores.set(i, 0);
+      }
+
+      // Then, update the map with actual scores from the form
+      trainingScoreData.criterions.forEach(criterion => {
+        criterion.evaluation_contents.forEach(content => {
+          if (content.evaluation_content_details) {
+            content.evaluation_content_details.forEach(detail => {
+              allScores.set(detail.id, detail.student_score);
+            });
+          } else {
+            allScores.set(content.id, content.total_student_score);
+          }
+        });
+      });
+
+      // Convert the map to the required array format
+      allScores.forEach((score, id) => {
+        trainingScoreDetails.push({
+          evaluation_content_id: id,
+          score: score
+        });
+      });
+
+      const payload = {
+        training_score_details: trainingScoreDetails,
+      };
+
+      await axios.post(
+        `http://localhost:8080/api/v1/student/training-scores/${id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      alert("Điểm rèn luyện đã được gửi thành công!");
+      navigate(-1);
+    } catch (err) {
+      console.error("Lỗi khi gửi điểm rèn luyện:", err);
+      alert("Có lỗi xảy ra khi gửi điểm rèn luyện. Vui lòng thử lại.");
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (!trainingScoreData) {
+    return <div>No data found.</div>;
+  }
+
+  const { criterions, status, total_score } = trainingScoreData;
+  const isEditable = status === "WAIT_STUDENT" && userRole === "STUDENT";
+  const totalMaxScore = criterions.reduce((sum, criterion) => sum + criterion.max_score, 0);
+
+  const overallStudentTotalScore = criterions.reduce((criterionSum, criterion) => {
+    return criterionSum + criterion.evaluation_contents.reduce((contentSum, content) => {
+      if (content.evaluation_content_details) {
+        if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
+          const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.student_score, 0);
+          return contentSum + Math.max(0, content.max_score + deductions);
+        } else {
+          return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.student_score, 0);
+        }
+      } else {
+        return contentSum + content.total_student_score;
+      }
+    }, 0);
+  }, 0);
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4 flex items-center justify-between" style={{ backgroundColor: '#40ACE9', color: 'white', padding: '10px 20px', borderRadius: '8px' }}>
+        <div className="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Phiếu đánh giá điểm rèn luyện
         </div>
-    );
-}
+        <span className="ml-2 px-3 py-1 text-sm font-semibold rounded-full bg-white text-blue-800">
+          {getStatusInVietnamese(status)}
+        </span>
+      </h1>
+      <table className="min-w-full border-collapse border border-gray-400">
+        <thead>
+          <tr>
+            <th className="py-2 px-4 border border-gray-400">TT</th>
+            <th className="py-2 px-4 border border-gray-400 text-left">Nội dung đánh giá</th>
+            <th className="py-2 px-4 border border-gray-400">Điểm quy định</th>
+            <th className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>SV đánh giá</th>
+            <th className="py-2 px-4 border border-gray-400 text-center">Lớp đánh giá</th>
+            <th className="py-2 px-4 border border-gray-400 text-center">CVHT đánh giá</th>
+          </tr>
+        </thead>
+        <tbody>
+          {criterions.map((criterion, criterionIndex) => (
+            <React.Fragment key={criterion.id}>
+              <tr className="bg-gray-100 font-semibold hover:bg-gray-50 transition-colors duration-200">
+                <td className="py-3 px-4 border border-gray-400"></td>
+                <td className="py-3 px-4 border border-gray-400">
+                  <span className="text-[#40ACE9] font-bold text-lg">
+                    Tiêu chí {criterionIndex + 1}: {criterion.criterion_name.replace(`Tiêu chí ${criterionIndex + 1}: `, "")}
+                  </span>
+                </td>
+                <td className="py-3 px-4 border border-gray-400 text-center font-medium">{criterion.max_score} điểm</td>
+                <td className={`py-3 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}></td>
+                <td className="py-3 px-4 border border-gray-400 text-center"></td>
+                <td className="py-3 px-4 border border-gray-400 text-center font-medium">{criterion.score}</td>
+              </tr>
+              {criterion.evaluation_contents.map((content, contentIndex) => (
+                <React.Fragment key={content.id}>
+                  <tr className="hover:bg-gray-50 transition-colors duration-200">
+                    <td className="py-2 px-4 border border-gray-400 font-medium">{criterionIndex + 1}.{contentIndex + 1}</td>
+                    <td className="py-2 px-4 border border-gray-400 font-medium">
+                      {content.content}
+                    </td>
+                    <td className="py-2 px-4 border border-gray-400 text-center">
+                      {content.max_score} điểm
+                    </td>
+                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                      {content.evaluation_content_details === null ? (
+                        <input
+                          type="number"
+                          value={content.total_student_score}
+                          className="w-20 mx-auto text-center ml-3 border border-gray-400"
+                          disabled={!isEditable}
+                          onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
+                          max={content.max_score}
+                          min={content.max_score < 0 ? content.max_score : 0}
+                        />
+                      ) : (
+                        (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
+                          Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.student_score, 0)) :
+                          content.total_student_score
+                      )}
+                    </td>
+                    <td className="py-2 px-4 border border-gray-400 text-center">
+                      {content.evaluation_content_details === null ? (
+                        <input
+                          type="number"
+                          value={content.total_class_committee_score}
+                          className="w-20 mx-auto text-center ml-3 border border-gray-400"
+                          disabled={true}
+                          readOnly
+                          max={content.max_score}
+                          min={content.max_score < 0 ? content.max_score : 0}
+                        />
+                      ) : (
+                        content.total_class_committee_score
+                      )}
+                    </td>
+                    <td className="py-2 px-4 border border-gray-400 text-center">
+                      {content.evaluation_content_details === null ? (
+                        <input
+                          type="number"
+                          value={content.total_academic_advisor_score}
+                          className="w-20 mx-auto text-center ml-3 border border-gray-400"
+                          disabled={true}
+                          readOnly
+                          max={content.max_score}
+                          min={content.max_score < 0 ? content.max_score : 0}
+                        />
+                      ) : (
+                        content.total_academic_advisor_score
+                      )}
+                    </td>
+                  </tr>
+                  {content.evaluation_content_details && (
+                    <>
+                      {content.evaluation_content_details.map((detail) => (
+                        <tr key={detail.id}>
+                          <td className="py-2 px-4 border border-gray-400"></td>
+                          <td className="py-2 px-4 border border-gray-400 pl-8">
+                            {content.id === 2 && detail.id !== 8 ? (
+                              <input
+                                type="radio"
+                                id={`detail-${detail.id}`}
+                                name={`content-${content.id}`}
+                                value={detail.id}
+                                checked={detail.id === selectedRadio1_2}
+                                className="mr-2 border border-gray-400"
+                                disabled={!isEditable}
+                                onChange={() => handleScoreChange(content.id, detail.id, true)}
+                              />
+                            ) : (content.id === 19 && detail.id === 20) || (content.id === 21 && detail.id === 22) ? (
+                              <input
+                                type="number"
+                                id={`detail-${detail.id}`}
+                                value={detail.student_score !== 0 ? Math.abs(detail.student_score / detail.score) : ''}
+                                className="mr-2 w-20 border border-gray-400"
+                                disabled={!isEditable}
+                                onChange={(e) => handleScoreChange(content.id, detail.id, e.target.value)}
+                                min={0}
+                                max={5}
+                              />
+                            ) : (
+                              <input
+                                type="checkbox"
+                                id={`detail-${detail.id}`}
+                                checked={detail.student_score === detail.score}
+                                className="mr-2 border border-gray-400"
+                                disabled={!isEditable}
+                                onChange={(e) => handleScoreChange(content.id, detail.id, e.target.checked)}
+                              />
+                            )}
+                            <label htmlFor={`detail-${detail.id}`}>
+                              {detail.content}
+                            </label>
+                          </td>
+                          <td className="py-2 px-4 border border-gray-400 text-center">{detail.score} điểm</td>
+                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                            {detail.student_score}
+                          </td>
+                          <td className="py-2 px-4 border border-gray-400 text-center">{detail.class_committee_score}</td>
+                          <td className="py-2 px-4 border border-gray-400 text-center">{detail.academic_advisor_score}</td>
+                        </tr>
+                      ))}
+                    </>
+                  )}
+                </React.Fragment>
+              ))}
+            </React.Fragment>
+          ))}
+          <tr className="font-bold bg-gray-100">
+            <td className="py-2 px-4 border border-gray-400"></td>
+            <td className="py-2 px-4 border border-gray-400">Tổng điểm rèn luyện</td>
+            <td className="py-2 px-4 border border-gray-400 text-center">{totalMaxScore} điểm</td>
+            <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>Tổng: {overallStudentTotalScore} điểm</td>
+            <td className="py-2 px-4 border border-gray-400 text-center"></td>
+            <td className="py-2 px-4 border border-gray-400 text-center">{total_score} điểm</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="mt-4 flex justify-end space-x-2">
+        {isEditable && (
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Gửi
+          </button>
+        )}
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Quay lại
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default ScoreDetailPage;
