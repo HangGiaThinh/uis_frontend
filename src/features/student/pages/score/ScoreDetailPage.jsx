@@ -48,12 +48,12 @@ function ScoreDetailPage() {
         const newCriterionTotalScores = {};
         data.data.criterions.forEach(criterion => {
             let currentCriterionScore = 0;
-            allItems.filter(item => !item.isParent && item.parentId === criterion.id || 
-                                      (item.parentId !== null && criterion.evaluation_contents.some(content => content.id === item.parentId && content.criterion_id === criterion.id))) // Added check for nested items based on their parent's criterion_id
-                   .forEach(item => {
-                const fieldName = `score_${item.parentId}_${item.id}`;
-                currentCriterionScore += parseInt(getValues(fieldName) || 0);
-            });
+            allItems.filter(item => !item.isParent && item.parentId === criterion.id ||
+                (item.parentId !== null && criterion.evaluation_contents.some(content => content.id === item.parentId && content.criterion_id === criterion.id))) // Added check for nested items based on their parent's criterion_id
+                .forEach(item => {
+                    const fieldName = `score_${item.parentId}_${item.id}`;
+                    currentCriterionScore += parseInt(getValues(fieldName) || 0);
+                });
             newCriterionTotalScores[criterion.id] = currentCriterionScore;
         });
         setCriterionTotalScores(newCriterionTotalScores);
@@ -62,48 +62,43 @@ function ScoreDetailPage() {
     useEffect(() => {
         if (data && data.data.criterions) {
             let initialTotal = 0;
-            const newSelectedScores = {}; // Khởi tạo lại selectedScores để đảm bảo mặc định chưa chọn
+            const newSelectedScores = {};
 
-            // Khởi tạo điểm cho tất cả mục con và cha
             data.data.criterions.forEach(criterion => {
                 criterion.evaluation_contents.forEach(content => {
                     if (content.evaluation_content_details) {
                         content.evaluation_content_details.forEach(detail => {
-                            const score = detail.student_score || detail.total_student_score || 0;
-                            // Đảm bảo các mục từ ID 3 đến 7 mặc định chưa chọn
-                            if (content.id === 2 && [3, 4, 5, 6, 7].includes(detail.id)) {
-                                setValue(`score_${content.id}_${detail.id}`, 0); 
-                                newSelectedScores[detail.id] = 0;
+                            if (content.id === 2 && [3, 4, 5, 6, 7, 8].includes(detail.id)) {
+                                if (detail.student_score === detail.score) {
+                                    setValue(`score_${content.id}_${detail.id}`, detail.score);
+                                    newSelectedScores[detail.id] = detail.score;
+                                } else {
+                                    setValue(`score_${content.id}_${detail.id}`, 0);
+                                    newSelectedScores[detail.id] = undefined;
+                                }
                             } else {
-                                setValue(`score_${content.id}_${detail.id}`, score); // Correct field name
+                                const score = detail.student_score || detail.total_student_score || 0;
+                                setValue(`score_${content.id}_${detail.id}`, score);
                                 newSelectedScores[detail.id] = score;
                                 initialTotal += score;
                             }
                         });
                     } else {
                         const score = content.student_score || content.total_student_score || 0;
-                        // Đảm bảo các mục từ ID 3 đến 7 mặc định chưa chọn
-                        if (content.id === 2 && [3, 4, 5, 6, 7].includes(content.id)) {
-                            setValue(`score_${criterion.id}_${content.id}`, 0);
-                            newSelectedScores[content.id] = 0;
-                        } else {
-                            setValue(`score_${criterion.id}_${content.id}`, score);
-                            newSelectedScores[content.id] = score;
-                            initialTotal += score;
-                        }
+                        setValue(`score_${criterion.id}_${content.id}`, score);
+                        newSelectedScores[content.id] = score;
+                        initialTotal += score;
                     }
                 });
             });
 
-            // Xử lý điểm mặc định cho các mục cha (1.2, 1.3, 2.1, 2.2, 2.3)
             const score12 = data.data.criterions.find(c => c.id === 1)?.evaluation_contents.find(c => c.id === 2);
             if (score12 && score12.evaluation_content_details) {
-                // Đảm bảo chỉ 1 trong 3-7 được chọn, và nếu 8 được chọn thì trừ điểm
                 let currentMaxChildScore = 0;
                 let isId8Selected = false;
 
                 [3, 4, 5, 6, 7, 8].forEach(id => {
-                    if (newSelectedScores[id] !== undefined && newSelectedScores[id] !== 0) {
+                    if (newSelectedScores[id] !== undefined) {
                         if (id === 8) {
                             isId8Selected = true;
                         } else {
@@ -111,10 +106,10 @@ function ScoreDetailPage() {
                         }
                     }
                 });
-                
+
                 let parentScore = currentMaxChildScore > 0 ? Math.min(currentMaxChildScore, score12.max_score || 10) : 0;
                 if (isId8Selected) {
-                    parentScore = -1; // Nếu id 8 được chọn, điểm là -1
+                    parentScore = -1;
                 }
 
                 newSelectedScores[2] = parentScore;
@@ -149,17 +144,28 @@ function ScoreDetailPage() {
 
             const score23 = data.data.criterions.find(c => c.id === 2)?.evaluation_contents.find(c => c.id === 21);
             if (score23) {
-                const maxScoreFor21 = score23.max_score || 5; 
+                const maxScoreFor21 = score23.max_score || 5;
                 const id22Detail = score23.evaluation_content_details?.find(detail => detail.id === 22);
                 const adjustmentFrom22 = id22Detail?.student_score || parseInt(getValues(`score_${score23.id}_${22}`) || 0);
-                const parentScore = Math.max(0, maxScoreFor21 + adjustmentFrom22); 
+                const parentScore = Math.max(0, maxScoreFor21 + adjustmentFrom22);
                 newSelectedScores[21] = parentScore;
                 setValue(`score_2_21`, parentScore);
             }
 
+            // Thêm logic cho 2.2 (idND=19) tương tự 2.3
+            const score22Item = data.data.criterions.find(c => c.id === 2)?.evaluation_contents.find(c => c.id === 19);
+            if (score22Item) {
+                const maxScoreFor19 = score22Item.max_score || 5;
+                const id20Detail = score22Item.evaluation_content_details?.find(detail => detail.id === 20);
+                const adjustmentFrom20 = id20Detail?.student_score || parseInt(getValues(`score_${score22Item.id}_${20}`) || 0);
+                const parentScore = Math.max(0, maxScoreFor19 + adjustmentFrom20);
+                newSelectedScores[19] = parentScore;
+                setValue(`score_2_19`, parentScore);
+            }
+
             setSelectedScores(newSelectedScores);
-            updateTotalScore(newSelectedScores); // Recalculate total score based on the newly set values
-            updateCriterionScores(); // Initialize criterion scores
+            updateTotalScore(newSelectedScores);
+            updateCriterionScores();
         }
     }, [data, setValue, getValues]);
 
@@ -167,46 +173,39 @@ function ScoreDetailPage() {
         const newSelectedScores = { ...selectedScores };
         const isChecked = e.target.checked;
 
-        // Cập nhật điểm cho mục con
-        if (parentId === 2) { // 1.2
-            // Nếu là ID từ 3 đến 7, reset tất cả điểm của các mục con từ 3-7 về 0
+        if (parentId === 2) {
             if ([3, 4, 5, 6, 7].includes(contentId)) {
                 [3, 4, 5, 6, 7].forEach(id => {
-                    newSelectedScores[id] = 0;
-                    setValue(`score_${parentId}_${id}`, 0);
-                    setValue(`class_score_${parentId}_${id}`, 0); // Reset for class_score
-                    setValue(`cvht_score_${parentId}_${id}`, 0); // Reset for cvht_score
-                });
-            }
-            
-            // Nếu là ID 8, reset các ID khác về 0
-            if (contentId === 8) {
-                [3, 4, 5, 6, 7].forEach(id => {
-                    newSelectedScores[id] = 0;
-                    setValue(`score_${parentId}_${id}`, 0);
-                    setValue(`class_score_${parentId}_${id}`, 0); // Reset for class_score
-                    setValue(`cvht_score_${parentId}_${id}`, 0); // Reset for cvht_score
+                    if (id !== contentId) {
+                        newSelectedScores[id] = undefined;
+                        setValue(`score_${parentId}_${id}`, 0);
+                    }
                 });
             }
 
-            // Nếu checkbox được chọn, cập nhật điểm cho mục con đó
+            if (contentId === 8) {
+                [3, 4, 5, 6, 7].forEach(id => {
+                    newSelectedScores[id] = undefined;
+                    setValue(`score_${parentId}_${id}`, 0);
+                });
+            }
+
             if (isChecked) {
                 newSelectedScores[contentId] = score;
                 setValue(`score_${parentId}_${contentId}`, score);
-            } else { // Nếu bỏ chọn, đặt về 0
-                newSelectedScores[contentId] = 0;
+            } else {
+                newSelectedScores[contentId] = undefined;
                 setValue(`score_${parentId}_${contentId}`, 0);
             }
 
-            // Tính điểm cho mục cha
             const parentContent = allItems.find(item => item.id === parentId);
             const maxScore = parentContent?.max_score || 10;
-            
+
             let currentMaxChildScore = 0;
             let isId8Selected = false;
 
             [3, 4, 5, 6, 7, 8].forEach(id => {
-                if (newSelectedScores[id] !== undefined && newSelectedScores[id] !== 0) {
+                if (newSelectedScores[id] !== undefined) {
                     if (id === 8) {
                         isId8Selected = true;
                     } else {
@@ -214,63 +213,57 @@ function ScoreDetailPage() {
                     }
                 }
             });
-            
+
             let parentScore = currentMaxChildScore > 0 ? Math.min(currentMaxChildScore, maxScore) : 0;
             if (isId8Selected) {
-                parentScore = -1; // Nếu id 8 được chọn, điểm là -1
+                parentScore = -1;
             }
 
             newSelectedScores[2] = parentScore;
             setValue(`score_1_2`, parentScore);
-            setValue(`class_score_1_2`, parentScore); // Apply to class committee
-            setValue(`cvht_score_1_2`, parentScore);   // Apply to academic advisor
 
-        } else if (parentId === 16) { // 2.1
-            // Reset tất cả điểm của các mục con về 0
+        } else if (parentId === 16) {
             [17, 18, 19, 20, 21, 22].forEach(id => {
-                newSelectedScores[id] = 0;
+                newSelectedScores[id] = undefined;
                 setValue(`score_${parentId}_${id}`, 0);
-                setValue(`class_score_${parentId}_${id}`, 0); // Reset for class_score
-                setValue(`cvht_score_${parentId}_${id}`, 0); // Reset for cvht_score
+                setValue(`class_score_${parentId}_${id}`, 0);
+                setValue(`cvht_score_${parentId}_${id}`, 0);
             });
 
-            // Nếu checkbox được chọn, cập nhật điểm cho mục con đó
             if (isChecked) {
                 newSelectedScores[contentId] = score;
                 setValue(`score_${parentId}_${contentId}`, score);
             } else {
-                newSelectedScores[contentId] = 0;
+                newSelectedScores[contentId] = undefined;
                 setValue(`score_${parentId}_${contentId}`, 0);
             }
 
-            // Tính điểm cho mục cha
             const parentContent = allItems.find(item => item.id === parentId);
             const maxScore = parentContent?.max_score || 15;
             const penalty = [17, 18, 19, 20, 21, 22].reduce((sum, id) => {
-                const isSelected = newSelectedScores[id] !== undefined && newSelectedScores[id] !== 0;
-                return sum + (isSelected ? newSelectedScores[id] : 0);
+                const isSelected = newSelectedScores[id] !== undefined;
+                return sum + (isSelected ? (newSelectedScores[id] || 0) : 0);
             }, 0);
             const parentScore = Math.min(maxScore, Math.max(0, maxScore + penalty));
             newSelectedScores[16] = parentScore;
             setValue(`score_2_16`, parentScore);
-            setValue(`class_score_2_16`, parentScore); // Apply to class committee
-            setValue(`cvht_score_2_16`, parentScore);   // Apply to academic advisor
+            setValue(`class_score_2_16`, parentScore);
+            setValue(`cvht_score_2_16`, parentScore);
 
-        } else if (parentId === 19) { // 2.2
+        } else if (parentId === 19) {
             const parentContent = allItems.find(item => item.id === parentId);
             const maxScore = parentContent?.max_score || 5;
-            // Fix: Sử dụng newSelectedScores[contentId] thay vì getValues trực tiếp
-            const penalty = newSelectedScores[contentId] || 0; 
+            const penalty = newSelectedScores[contentId] || 0;
             const parentScore = Math.max(0, maxScore + penalty);
             newSelectedScores[19] = parentScore;
             setValue(`score_2_19`, parentScore);
-            setValue(`class_score_2_19`, parentScore); // Apply to class committee
-            setValue(`cvht_score_2_19`, parentScore);   // Apply to academic advisor
+            setValue(`class_score_2_19`, parentScore);
+            setValue(`cvht_score_2_19`, parentScore);
         }
 
         setSelectedScores(newSelectedScores);
         updateTotalScore(newSelectedScores);
-        updateCriterionScores(); // Update criterion scores after any change
+        updateCriterionScores();
         trigger();
     };
 
@@ -366,7 +359,7 @@ function ScoreDetailPage() {
 
     return (
         <div className="container mx-auto p-4">
-           
+
             <form onSubmit={handleSubmit(onSubmitWithValidation)} className="overflow-x-auto">
                 <table className="table w-full border-collapse border border-gray-300">
                     <thead>
@@ -467,16 +460,22 @@ function ScoreDetailPage() {
 
                                                         let tempSelectedScores = { ...selectedScores, [item.id]: newScore };
 
+                                                        if (item.id === 20 && item.parentId === 19) {
+                                                            const maxScoreFor19 = allItems.find(i => i.id === 19)?.maxScore || 5;
+                                                            const newScoreFor19 = Math.max(0, maxScoreFor19 + newScore);
+                                                            setValue(`score_2_19`, newScoreFor19);
+                                                            tempSelectedScores[19] = newScoreFor19;
+                                                        }
                                                         if (item.id === 22 && item.parentId === 21) {
                                                             const maxScoreFor21 = allItems.find(i => i.id === 21)?.maxScore || 5;
                                                             const newScoreFor21 = Math.max(0, maxScoreFor21 + newScore);
-                                                            setValue(`score_2_21`, newScoreFor21); // Cập nhật điểm của ID 21 vào form
-                                                            tempSelectedScores[21] = newScoreFor21; // Cập nhật vào bản sao local của selectedScores
+                                                            setValue(`score_2_21`, newScoreFor21);
+                                                            tempSelectedScores[21] = newScoreFor21;
                                                         }
-                                                        
-                                                        setSelectedScores(tempSelectedScores); // Cập nhật trạng thái selectedScores
-                                                        updateTotalScore(tempSelectedScores); // Gọi hàm tính tổng điểm với selectedScores đã được cập nhật
-                                                        updateCriterionScores(); // Update criterion scores
+
+                                                        setSelectedScores(tempSelectedScores);
+                                                        updateTotalScore(tempSelectedScores);
+                                                        updateCriterionScores();
                                                     }}
                                                 />
                                             ) : [2, 9, 16].includes(item.parentId) ? (
@@ -486,24 +485,24 @@ function ScoreDetailPage() {
                                                         name={item.id}
                                                         checked={
                                                             (item.parentId === 2 && [3, 4, 5, 6, 7, 8].includes(item.id)) ?
-                                                            (selectedScores[item.id] !== undefined && selectedScores[item.id] !== 0) :
-                                                            (selectedScores[item.id] === item.score)
+                                                                (selectedScores[item.id] !== undefined) :
+                                                                (selectedScores[item.id] === item.score)
                                                         }
                                                         onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
-                                                        disabled={data.data.status !== 'WAIT_STUDENT'} // Reverted disabled logic
+                                                        disabled={data.data.status !== 'WAIT_STUDENT'}
                                                     />
                                                 </label>
                                             ) : (
                                                 <input
                                                     type="number"
                                                     {...register(`score_${item.parentId}_${item.id}`, {
-                                                        min: -10,
+                                                        min: 0,
                                                         max: item.maxScore || 10,
                                                         valueAsNumber: true,
                                                         validate: value => (value <= (item.maxScore || 10)) || 'Điểm vượt quá mức quy định',
                                                     })}
                                                     className="input input-bordered w-full"
-                                                    disabled={data.data.status !== 'WAIT_STUDENT'} // Reverted disabled logic
+                                                    disabled={data.data.status !== 'WAIT_STUDENT'}
                                                     defaultValue={item.student_score || item.total_student_score || 0}
                                                     onChange={(e) => {
                                                         const newScore = parseInt(e.target.value) || 0;
@@ -541,7 +540,7 @@ function ScoreDetailPage() {
                                                             updateTotalScore(tempSelectedScores);
                                                             updateCriterionScores();
                                                         }}
-                                                        disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'} 
+                                                        disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'}
                                                     />
                                                 </label>
                                             ) : item.id === 21 ? (
@@ -553,7 +552,7 @@ function ScoreDetailPage() {
                                                         valueAsNumber: true,
                                                     })}
                                                     className="input input-bordered w-full"
-                                                    disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'} 
+                                                    disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'}
                                                     defaultValue={item.class_committee_score || 0}
                                                     onChange={(e) => {
                                                         const newScore = parseInt(e.target.value) || 0;
@@ -573,7 +572,7 @@ function ScoreDetailPage() {
                                                         valueAsNumber: true,
                                                     })}
                                                     className="input input-bordered w-full"
-                                                    disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'} 
+                                                    disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'}
                                                     defaultValue={item.class_committee_score || 0}
                                                     onChange={(e) => {
                                                         const newScore = parseInt(e.target.value) || 0;
@@ -581,10 +580,16 @@ function ScoreDetailPage() {
 
                                                         let tempSelectedScores = { ...selectedScores, [`class_${item.id}`]: newScore };
 
+                                                        if (item.id === 20 && item.parentId === 19) {
+                                                            const maxScoreFor19 = allItems.find(i => i.id === 19)?.maxScore || 5;
+                                                            const newScoreFor19 = Math.max(0, maxScoreFor19 + newScore);
+                                                            setValue(`class_score_2_19`, newScoreFor19);
+                                                            tempSelectedScores[`class_19`] = newScoreFor19;
+                                                        }
                                                         if (item.id === 22 && item.parentId === 21) {
                                                             const maxScoreFor21 = allItems.find(i => i.id === 21)?.maxScore || 5;
                                                             const newScoreFor21 = Math.max(0, maxScoreFor21 + newScore);
-                                                            setValue(`class_score_2_21`, newScoreFor21); // Update form value for ID 21
+                                                            setValue(`class_score_2_21`, newScoreFor21);
                                                             tempSelectedScores[`class_21`] = newScoreFor21;
                                                         }
                                                         setSelectedScores(tempSelectedScores);
@@ -599,11 +604,11 @@ function ScoreDetailPage() {
                                                         name={`class_${item.id}`}
                                                         checked={
                                                             (item.parentId === 2 && [3, 4, 5, 6, 7, 8].includes(item.id)) ?
-                                                            (selectedScores[`class_${item.id}`] !== undefined && selectedScores[`class_${item.id}`] !== 0) :
-                                                            (selectedScores[`class_${item.id}`] === item.score)
+                                                                (selectedScores[`class_${item.id}`] !== undefined) :
+                                                                (selectedScores[`class_${item.id}`] === item.score)
                                                         }
                                                         onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
-                                                        disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'} 
+                                                        disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'}
                                                     />
                                                 </label>
                                             ) : (
@@ -616,7 +621,7 @@ function ScoreDetailPage() {
                                                         validate: value => (value <= (item.maxScore || 10)) || 'Điểm vượt quá mức quy định',
                                                     })}
                                                     className="input input-bordered w-full"
-                                                    disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'} 
+                                                    disabled={data.data.status !== 'WAIT_CLASSCOMMITTEE'}
                                                     defaultValue={item.class_committee_score || 0}
                                                     onChange={(e) => {
                                                         const newScore = parseInt(e.target.value) || 0;
@@ -694,10 +699,16 @@ function ScoreDetailPage() {
 
                                                         let tempSelectedScores = { ...selectedScores, [`cvht_${item.id}`]: newScore };
 
+                                                        if (item.id === 20 && item.parentId === 19) {
+                                                            const maxScoreFor19 = allItems.find(i => i.id === 19)?.maxScore || 5;
+                                                            const newScoreFor19 = Math.max(0, maxScoreFor19 + newScore);
+                                                            setValue(`cvht_score_2_19`, newScoreFor19);
+                                                            tempSelectedScores[`cvht_19`] = newScoreFor19;
+                                                        }
                                                         if (item.id === 22 && item.parentId === 21) {
                                                             const maxScoreFor21 = allItems.find(i => i.id === 21)?.maxScore || 5;
                                                             const newScoreFor21 = Math.max(0, maxScoreFor21 + newScore);
-                                                            setValue(`cvht_score_2_21`, newScoreFor21); // Cập nhật điểm của ID 21 vào form
+                                                            setValue(`cvht_score_2_21`, newScoreFor21);
                                                             tempSelectedScores[`cvht_21`] = newScoreFor21;
                                                         }
                                                         setSelectedScores(tempSelectedScores);
@@ -712,8 +723,8 @@ function ScoreDetailPage() {
                                                         name={`cvht_${item.id}`}
                                                         checked={
                                                             (item.parentId === 2 && [3, 4, 5, 6, 7, 8].includes(item.id)) ?
-                                                            (selectedScores[`cvht_${item.id}`] !== undefined && selectedScores[`cvht_${item.id}`] !== 0) :
-                                                            (selectedScores[`cvht_${item.id}`] === item.score)
+                                                                (selectedScores[`cvht_${item.id}`] !== undefined && selectedScores[`cvht_${item.id}`] !== 0) :
+                                                                (selectedScores[`cvht_${item.id}`] === item.score)
                                                         }
                                                         onChange={(e) => handleCheckboxChange(e, item.score, item.id, item.parentId)}
                                                         disabled={data.data.status !== 'WAIT_ACADEMIC_ADVISOR'} // Reverted disabled logic
