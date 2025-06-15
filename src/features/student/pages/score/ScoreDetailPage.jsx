@@ -222,6 +222,21 @@ function ScoreDetailPage() {
             newSelectedScores[2] = parentScore;
             setValue(`score_1_2`, parentScore);
 
+        } else if (parentId === 9) {
+            if ([10, 11, 12, 13, 14, 15].includes(contentId)) {
+                if (isChecked) {
+                    newSelectedScores[contentId] = score;
+                    setValue(`score_${parentId}_${contentId}`, score);
+                } else {
+                    newSelectedScores[contentId] = undefined;
+                    setValue(`score_${parentId}_${contentId}`, 0);
+                }
+
+                const childSum = [10, 11, 12, 13, 14, 15].reduce((sum, id) => sum + (newSelectedScores[id] || 0), 0);
+                const parentScore = childSum !== 0 ? Math.min(4 + childSum, 10) : 4;
+                newSelectedScores[9] = parentScore;
+                setValue(`score_1_9`, parentScore);
+            }
         } else if (parentId === 16) {
             [17, 18, 19, 20, 21, 22].forEach(id => {
                 newSelectedScores[id] = undefined;
@@ -275,15 +290,27 @@ function ScoreDetailPage() {
                 if (item.parentId === 2 && [3, 4, 5, 6, 7, 8].includes(item.id)) {
                     return;
                 }
+                // Bỏ qua việc tính điểm của các mục con trong phần 1.3 (id từ 10-15) vì nó được tính ở mục cha
+                if (item.parentId === 9 && [10, 11, 12, 13, 14, 15].includes(item.id)) {
+                    return;
+                }
+                // Bỏ qua việc tính điểm của các mục con trong phần 2.1 (id từ 17-22) vì nó được tính ở mục cha
+                if (item.parentId === 16 && [17, 18, 19, 20, 21, 22].includes(item.id)) {
+                    return;
+                }
+                // Bỏ qua việc tính điểm của các mục con trong phần 2.2 (id 20) vì nó được tính ở mục cha
+                if (item.parentId === 19 && item.id === 20) {
+                    return;
+                }
+                // Bỏ qua việc tính điểm của các mục con trong phần 2.3 (id 22) vì nó được tính ở mục cha
+                if (item.parentId === 21 && item.id === 22) {
+                    return;
+                }
                 const field = `score_${item.parentId}_${item.id}`;
                 const score = parseInt(getValues(field) || 0);
                 newTotal += score;
             }
         });
-
-        // Thêm điểm của mục cha 1.2 (ID 2) vào tổng điểm
-        const score12Value = parseInt(getValues(`score_1_2`) || 0);
-        newTotal += score12Value;
 
         setTotalScore(newTotal);
     };
