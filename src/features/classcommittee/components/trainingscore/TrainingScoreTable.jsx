@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import trainingScoreApi from '../../services/trainingscore/trainingScoreApi';
 
 const STATUS_MAP = {
@@ -26,6 +27,7 @@ function TrainingScoreTable() {
   const [loading, setLoading] = useState(false);
   const [classInfo, setClassInfo] = useState(null);
   const [showClassInfo, setShowClassInfo] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     trainingScoreApi.getSemesters().then(res => {
@@ -130,7 +132,12 @@ function TrainingScoreTable() {
                       </span>
                     </td>
                     <td className="border px-2 py-1">
-                      <button className="text-blue-600 underline hover:text-blue-800">Xem chi tiết</button>
+                      <button 
+                        className="text-blue-600 underline hover:text-blue-800"
+                        onClick={() => navigate(`/class-committee/training-scores/${item.training_score_id}`)}
+                      >
+                        Xem chi tiết
+                      </button>
                     </td>
                   </tr>
                 ))

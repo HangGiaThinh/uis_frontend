@@ -12,7 +12,9 @@ import StudentAcademicResultsPage from "./features/student/pages/academic/Studen
 import ProtectedRoute from "./router/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import TrainingScoreManagePage from "./features/advisor/pages/TrainingScoreManagePage";
+import AdvisorTrainingScoreDetailPage from "./features/advisor/pages/TrainingScoreDetailPage";
 import ClassCommitteeTrainingScoreManagePage from "./features/classcommittee/pages/TrainingScoreManagePage";
+import ClassCommitteeTrainingScoreDetailPage from "./features/classcommittee/pages/TrainingScoreDetailPage";
 import AnnouncementListPage from "./features/user/pages/AnnouncementListPage";
 import AnnouncementDetailPage from "./features/user/pages/AnnouncementDetailPage";
 import ForgotPasswordPage from "./features/user/pages/ForgotPasswordPage";
@@ -101,10 +103,26 @@ function App() {
             }
           />
           <Route
+            path="/advisor/training-scores/:id"
+            element={
+              <ProtectedRoute allowedRoles={["ACADEMIC_ADVISOR"]}>
+                <AdvisorTrainingScoreDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/class-committee/training-scores"
             element={
               <ProtectedRoute allowedRoles={["CLASS_COMMITTEE"]}>
                 <ClassCommitteeTrainingScoreManagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/class-committee/training-scores/:id"
+            element={
+              <ProtectedRoute allowedRoles={["CLASS_COMMITTEE"]}>
+                <ClassCommitteeTrainingScoreDetailPage />
               </ProtectedRoute>
             }
           />

@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 
-const ScoreDetailPage = () => {
+const TrainingScoreDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [trainingScoreData, setTrainingScoreData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userRole, setUserRole] = useState(null);
   const [selectedRadio1_2, setSelectedRadio1_2] = useState(null);
 
   const getStatusInVietnamese = (status) => {
@@ -34,11 +33,9 @@ const ScoreDetailPage = () => {
     const fetchTrainingScore = async () => {
       try {
         const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
-        setUserRole(role);
 
         const response = await axios.get(
-          `http://localhost:8080/api/v1/student/training-scores/${id}`,
+          `http://localhost:8080/api/v1/advisor/training-scores/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -47,28 +44,29 @@ const ScoreDetailPage = () => {
         );
         setTrainingScoreData(response.data.data);
 
+        // Set selected radio for content 1.2
         const criterion1 = response.data.data.criterions.find(c => c.id === 1);
         if (criterion1) {
           const content2 = criterion1.evaluation_contents.find(c => c.id === 2);
           if (content2 && content2.evaluation_content_details) {
             const selectedNonZeroDetail = content2.evaluation_content_details.find(
-              d => d.id >= 3 && d.id <= 6 && d.student_score === d.score && d.score !== 0
+              d => d.id >= 3 && d.id <= 6 && d.academic_advisor_score === d.score && d.score !== 0
             );
 
             if (selectedNonZeroDetail) {
               setSelectedRadio1_2(selectedNonZeroDetail.id);
             } else {
               const selectedZeroDetail = content2.evaluation_content_details.find(
-                d => d.id === 7 && d.student_score === d.score && d.score === 0
+                d => d.id === 7 && d.academic_advisor_score === d.score && d.score === 0
               );
               const anyOtherRadioSelectedNonZero = content2.evaluation_content_details.some(
-                d => d.id >= 3 && d.id <= 6 && d.student_score === d.score && d.score !== 0
+                d => d.id >= 3 && d.id <= 6 && d.academic_advisor_score === d.score && d.score !== 0
               );
 
               if (selectedZeroDetail && !anyOtherRadioSelectedNonZero) {
                 setSelectedRadio1_2(selectedZeroDetail.id);
               } else {
-                setSelectedRadio1_2(null); // No radio selected initially
+                setSelectedRadio1_2(null);
               }
             }
           }
@@ -93,7 +91,7 @@ const ScoreDetailPage = () => {
               if (contentId === 27 || contentId === 33) {
                 return {
                   ...content,
-                  total_student_score: value ? content.max_score : 0
+                  total_academic_advisor_score: value ? content.max_score : 0
                 };
               }
               let newScore = parseInt(value);
@@ -102,7 +100,7 @@ const ScoreDetailPage = () => {
               if (newScore < (content.max_score < 0 ? content.max_score : 0)) newScore = (content.max_score < 0 ? content.max_score : 0);
               return {
                 ...content,
-                total_student_score: newScore,
+                total_academic_advisor_score: newScore,
               };
             } else if (content.evaluation_content_details) {
               let newDetails = [...content.evaluation_content_details];
@@ -111,7 +109,7 @@ const ScoreDetailPage = () => {
                 if (detailId === 8) {
                   newDetails = newDetails.map(detail => {
                     if (detail.id === 8) {
-                      return { ...detail, student_score: value ? detail.score : 0 };
+                      return { ...detail, academic_advisor_score: value ? detail.score : 0 };
                     }
                     return detail;
                   });
@@ -119,7 +117,7 @@ const ScoreDetailPage = () => {
                   setSelectedRadio1_2(detailId);
                   newDetails = newDetails.map(detail => {
                     if (detail.id >= 3 && detail.id <= 7) {
-                      return { ...detail, student_score: detail.id === detailId ? detail.score : 0 };
+                      return { ...detail, academic_advisor_score: detail.id === detailId ? detail.score : 0 };
                     }
                     return detail;
                   });
@@ -132,27 +130,27 @@ const ScoreDetailPage = () => {
                       if (isNaN(incidents)) incidents = 0;
                       if (incidents < 0) incidents = 0;
                       if (incidents > 5) incidents = 5;
-                      return { ...detail, student_score: incidents * detail.score };
+                      return { ...detail, academic_advisor_score: incidents * detail.score };
                     } else {
-                      return { ...detail, student_score: value ? detail.score : 0 };
+                      return { ...detail, academic_advisor_score: value ? detail.score : 0 };
                     }
                   }
                   return detail;
                 });
               }
 
-              let newTotalStudentScore;
+              let newTotalAcademicAdvisorScore;
               if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
-                const deductions = newDetails.reduce((sum, detail) => sum + detail.student_score, 0);
-                newTotalStudentScore = Math.max(0, content.max_score + deductions);
+                const deductions = newDetails.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
+                newTotalAcademicAdvisorScore = Math.max(0, content.max_score + deductions);
               } else {
-                newTotalStudentScore = newDetails.reduce((sum, detail) => sum + detail.student_score, 0);
+                newTotalAcademicAdvisorScore = newDetails.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
               }
 
               return {
                 ...content,
                 evaluation_content_details: newDetails,
-                total_student_score: newTotalStudentScore,
+                total_academic_advisor_score: newTotalAcademicAdvisorScore,
               };
             }
           }
@@ -177,21 +175,21 @@ const ScoreDetailPage = () => {
       const token = localStorage.getItem('token');
       const trainingScoreDetails = [];
 
-      // First, create a map of all possible IDs (1-36) with default score 0
+      // Create a map of all possible IDs (1-36) with default score 0
       const allScores = new Map();
       for (let i = 1; i <= 36; i++) {
         allScores.set(i, 0);
       }
 
-      // Then, update the map with actual scores from the form
+      // Update the map with actual scores from the form
       trainingScoreData.criterions.forEach(criterion => {
         criterion.evaluation_contents.forEach(content => {
           if (content.evaluation_content_details) {
             content.evaluation_content_details.forEach(detail => {
-              allScores.set(detail.id, detail.student_score);
+              allScores.set(detail.id, detail.academic_advisor_score);
             });
           } else {
-            allScores.set(content.id, content.total_student_score);
+            allScores.set(content.id, content.total_academic_advisor_score);
           }
         });
       });
@@ -209,7 +207,7 @@ const ScoreDetailPage = () => {
       };
 
       await axios.post(
-        `http://localhost:8080/api/v1/student/training-scores/${id}`,
+        `http://localhost:8080/api/v1/advisor/training-scores/${id}`,
         payload,
         {
           headers: {
@@ -218,11 +216,11 @@ const ScoreDetailPage = () => {
           },
         }
       );
-      alert("Điểm rèn luyện đã được gửi thành công!");
+      alert("Điểm rèn luyện đã được chấm thành công!");
       navigate(-1);
     } catch (err) {
-      console.error("Lỗi khi gửi điểm rèn luyện:", err);
-      alert("Có lỗi xảy ra khi gửi điểm rèn luyện. Vui lòng thử lại.");
+      console.error("Lỗi khi chấm điểm rèn luyện:", err);
+      alert("Có lỗi xảy ra khi chấm điểm rèn luyện. Vui lòng thử lại.");
     }
   };
 
@@ -239,20 +237,20 @@ const ScoreDetailPage = () => {
   }
 
   const { criterions, status, total_score } = trainingScoreData;
-  const isEditable = status === "WAIT_STUDENT" && (userRole === "STUDENT" || userRole === "CLASS_COMMITTEE");
+  const isEditable = status === "WAIT_ADVISOR";
   const totalMaxScore = criterions.reduce((sum, criterion) => sum + criterion.max_score, 0);
 
-  const overallStudentTotalScore = criterions.reduce((criterionSum, criterion) => {
+  const overallAcademicAdvisorTotalScore = criterions.reduce((criterionSum, criterion) => {
     return criterionSum + criterion.evaluation_contents.reduce((contentSum, content) => {
       if (content.evaluation_content_details) {
         if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
-          const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.student_score, 0);
+          const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
           return contentSum + Math.max(0, content.max_score + deductions);
         } else {
-          return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.student_score, 0);
+          return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.academic_advisor_score, 0);
         }
       } else {
-        return contentSum + content.total_student_score;
+        return contentSum + content.total_academic_advisor_score;
       }
     }, 0);
   }, 0);
@@ -264,7 +262,7 @@ const ScoreDetailPage = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          Phiếu đánh giá điểm rèn luyện
+          Phiếu chấm điểm rèn luyện - CVHT
         </div>
         <span className="ml-2 px-3 py-1 text-sm font-semibold rounded-full bg-white text-blue-800">
           {getStatusInVietnamese(status)}
@@ -276,9 +274,9 @@ const ScoreDetailPage = () => {
             <th className="py-2 px-4 border border-gray-400">TT</th>
             <th className="py-2 px-4 border border-gray-400 text-left">Nội dung đánh giá</th>
             <th className="py-2 px-4 border border-gray-400">Điểm quy định</th>
-            <th className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>SV đánh giá</th>
+            <th className="py-2 px-4 border border-gray-400 text-center">SV đánh giá</th>
             <th className="py-2 px-4 border border-gray-400 text-center">Lớp đánh giá</th>
-            <th className="py-2 px-4 border border-gray-400 text-center">CVHT đánh giá</th>
+            <th className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>CVHT đánh giá</th>
           </tr>
         </thead>
         <tbody>
@@ -292,9 +290,9 @@ const ScoreDetailPage = () => {
                   </span>
                 </td>
                 <td className="py-3 px-4 border border-gray-400 text-center font-medium">{criterion.max_score} điểm</td>
-                <td className={`py-3 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}></td>
                 <td className="py-3 px-4 border border-gray-400 text-center"></td>
-                <td className="py-3 px-4 border border-gray-400 text-center font-medium">{criterion.score}</td>
+                <td className="py-3 px-4 border border-gray-400 text-center"></td>
+                <td className={`py-3 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>{criterion.score}</td>
               </tr>
               {criterion.evaluation_contents.map((content, contentIndex) => (
                 <React.Fragment key={content.id}>
@@ -306,27 +304,9 @@ const ScoreDetailPage = () => {
                     <td className="py-2 px-4 border border-gray-400 text-center">
                       {content.max_score} điểm
                     </td>
-                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                    <td className="py-2 px-4 border border-gray-400 text-center">
                       {content.evaluation_content_details === null ? (
-                        content.id === 27 || content.id === 33 ? (
-                          <input
-    type="checkbox"
-    checked={content.total_student_score === content.max_score}
-    className="w-5 h-5 mx-auto text-center ml-3 border border-gray-400"
-    disabled={!isEditable}
-    onChange={(e) => handleScoreChange(content.id, null, e.target.checked ? content.max_score : 0)}
-  />
-) : (
-  <input
-    type="number"
-    value={content.total_student_score}
-    className="w-20 mx-auto text-center ml-3 border border-gray-400"
-    disabled={!isEditable}
-    onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
-    max={content.max_score}
-    min={content.max_score < 0 ? content.max_score : 0}
-  />
-)
+                        content.total_student_score
                       ) : (
                         (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
                           Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.student_score, 0)) :
@@ -335,32 +315,38 @@ const ScoreDetailPage = () => {
                     </td>
                     <td className="py-2 px-4 border border-gray-400 text-center">
                       {content.evaluation_content_details === null ? (
-                        <input
-                          type="number"
-                          value={content.total_class_committee_score}
-                          className="w-20 mx-auto text-center ml-3 border border-gray-400"
-                          disabled={true}
-                          readOnly
-                          max={content.max_score}
-                          min={content.max_score < 0 ? content.max_score : 0}
-                        />
-                      ) : (
                         content.total_class_committee_score
+                      ) : (
+                        (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
+                          Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.class_committee_score, 0)) :
+                          content.total_class_committee_score
                       )}
                     </td>
-                    <td className="py-2 px-4 border border-gray-400 text-center">
+                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
                       {content.evaluation_content_details === null ? (
-                        <input
-                          type="number"
-                          value={content.total_academic_advisor_score}
-                          className="w-20 mx-auto text-center ml-3 border border-gray-400"
-                          disabled={true}
-                          readOnly
-                          max={content.max_score}
-                          min={content.max_score < 0 ? content.max_score : 0}
-                        />
+                        content.id === 27 || content.id === 33 ? (
+                          <input
+                            type="checkbox"
+                            checked={content.total_academic_advisor_score === content.max_score}
+                            className="w-5 h-5 mx-auto text-center ml-3 border border-gray-400"
+                            disabled={!isEditable}
+                            onChange={(e) => handleScoreChange(content.id, null, e.target.checked ? content.max_score : 0)}
+                          />
+                        ) : (
+                          <input
+                            type="number"
+                            value={content.total_academic_advisor_score}
+                            className="w-20 mx-auto text-center ml-3 border border-gray-400"
+                            disabled={!isEditable}
+                            onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
+                            max={content.max_score}
+                            min={content.max_score < 0 ? content.max_score : 0}
+                          />
+                        )
                       ) : (
-                        content.total_academic_advisor_score
+                        (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
+                          Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.academic_advisor_score, 0)) :
+                          content.total_academic_advisor_score
                       )}
                     </td>
                   </tr>
@@ -385,7 +371,7 @@ const ScoreDetailPage = () => {
                               <input
                                 type="number"
                                 id={`detail-${detail.id}`}
-                                value={detail.student_score !== 0 ? Math.abs(detail.student_score / detail.score) : ''}
+                                value={detail.academic_advisor_score !== 0 ? Math.abs(detail.academic_advisor_score / detail.score) : ''}
                                 className="mr-2 w-20 border border-gray-400"
                                 disabled={!isEditable}
                                 onChange={(e) => handleScoreChange(content.id, detail.id, e.target.value)}
@@ -396,7 +382,7 @@ const ScoreDetailPage = () => {
                               <input
                                 type="checkbox"
                                 id={`detail-${detail.id}`}
-                                checked={detail.student_score === detail.score}
+                                checked={detail.academic_advisor_score === detail.score}
                                 className="mr-2 border border-gray-400"
                                 disabled={!isEditable}
                                 onChange={(e) => handleScoreChange(content.id, detail.id, e.target.checked)}
@@ -407,11 +393,13 @@ const ScoreDetailPage = () => {
                             </label>
                           </td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.score} điểm</td>
-                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                          <td className="py-2 px-4 border border-gray-400 text-center">
                             {detail.student_score}
                           </td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.class_committee_score}</td>
-                          <td className="py-2 px-4 border border-gray-400 text-center">{detail.academic_advisor_score}</td>
+                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                            {detail.academic_advisor_score}
+                          </td>
                         </tr>
                       ))}
                     </>
@@ -424,9 +412,9 @@ const ScoreDetailPage = () => {
             <td className="py-2 px-4 border border-gray-400"></td>
             <td className="py-2 px-4 border border-gray-400">Tổng điểm rèn luyện</td>
             <td className="py-2 px-4 border border-gray-400 text-center">{totalMaxScore} điểm</td>
-            <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>Tổng: {overallStudentTotalScore} điểm</td>
             <td className="py-2 px-4 border border-gray-400 text-center"></td>
-            <td className="py-2 px-4 border border-gray-400 text-center">{total_score} điểm</td>
+            <td className="py-2 px-4 border border-gray-400 text-center"></td>
+            <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>Tổng: {overallAcademicAdvisorTotalScore} điểm</td>
           </tr>
         </tbody>
       </table>
@@ -436,7 +424,7 @@ const ScoreDetailPage = () => {
             onClick={handleSubmit}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
-            Gửi
+            Chấm điểm
           </button>
         )}
         <button
@@ -450,4 +438,4 @@ const ScoreDetailPage = () => {
   );
 };
 
-export default ScoreDetailPage;
+export default TrainingScoreDetailPage; 

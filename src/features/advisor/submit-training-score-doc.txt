@@ -1,0 +1,532 @@
+api xem chi tiết điểm rèn luyện của sinh viên trong lớp. do là CVHT
+GET: http://localhost:8080/api/v1/advisor/training-scores/2
+Authorization
+Bearer Token
+Token <token>
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy chi tiết form đánh giá điểm rèn luyện của sinh viên",
+    "data": {
+        "id": 2,
+        "criterions": [
+            {
+                "id": 1,
+                "score": 0,
+                "criterion_name": "Tiêu chí 1: Đánh giá về ý thức tham gia học tập",
+                "max_score": 20,
+                "evaluation_contents": [
+                    {
+                        "id": 1,
+                        "content": "1.1 Ý thức và thái độ trong học tập. Đi học đầy đủ, đúng giờ, nghiêm túc trong giờ học, giờ thực hành",
+                        "max_score": 3,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 2,
+                        "content": "1.2 Kết quả học tập trong kỳ học",
+                        "max_score": 10,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": [
+                            {
+                                "id": 3,
+                                "content": "Có kết quả học tập xếp loại Xuất sắc",
+                                "score": 10,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 4,
+                                "content": "Có kết quả học tập đạt loại Giỏi",
+                                "score": 8,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 5,
+                                "content": "Có kết quả học tập đạt loại Khá",
+                                "score": 6,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 6,
+                                "content": "Có kết quả học tập đạt loại Trung bình",
+                                "score": 4,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 7,
+                                "content": "Có kết quả học tập đạt loại dưới Trung bình",
+                                "score": 0,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 8,
+                                "content": "Học lại (phần lý thuyết/ thực hành)",
+                                "score": -1,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": 9,
+                        "content": "1.3 Ý thức chấp hành tốt nội quy về các kỳ thi",
+                        "max_score": 4,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": [
+                            {
+                                "id": 10,
+                                "content": "Không đủ điều kiện dự thi/bị cấm thi cho mỗi học phần (lý thuyết/ thực hành)",
+                                "score": -2,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 11,
+                                "content": "Bị lập biên bản khiển trách khi thi kết thúc học phần",
+                                "score": -2,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 12,
+                                "content": "Bị lập biên bản cảnh cáo khi thi kết thúc học phần",
+                                "score": -3,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 13,
+                                "content": "Bị lập biên bản đình chỉ khi thi kết thúc học phần",
+                                "score": -4,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": 14,
+                        "content": "1.4 Ý thức và thái độ tham gia các hoạt động ngoại khóa, các sự kiện liên quan đến nghiên cứu khoa học, học thuật, chuyên môn, Câu lạc bộ (0,5 điểm/1 sự kiện, hoạt động tham gia, tổng điểm không vượt quá 2 điểm)",
+                        "max_score": 2,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 15,
+                        "content": "1.5 Tinh thần vượt khó, phấn đấu vươn lên trong học tập (có ĐTBCTL học kỳ sau lớn hơn học kỳ trước đó; đối với sinh viên năm thứ nhất, học kỳ 1 không có điểm dưới 2,5)",
+                        "max_score": 1,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "score": 0,
+                "criterion_name": "Tiêu chí 2: Đánh giá về ý thức chấp hành nội quy, quy chế, quy định của Học viện",
+                "max_score": 25,
+                "evaluation_contents": [
+                    {
+                        "id": 16,
+                        "content": "2.1 Thực hiện nghiêm túc các nội quy, quy chế, các quy định hiện hành trong Học viện.",
+                        "max_score": 15,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": [
+                            {
+                                "id": 17,
+                                "content": "Không đóng học phí theo quy định",
+                                "score": -15,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            },
+                            {
+                                "id": 18,
+                                "content": "Không thực hiện quy định về công tác ngoại trú, nội trú.",
+                                "score": -5,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": 19,
+                        "content": "2.2 Thực hiện nghiệp túc các buổi họp lớp/ sinh hoạt đoàn thể do Học viện/Khoa/Viện, CVHT, Lớp/Chi đoàn tổ chức (tùy thuộc vào số buổi tổ chức sinh hoạt, họp)",
+                        "max_score": 5,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": [
+                            {
+                                "id": 20,
+                                "content": "Vắng 01 buổi họp lớp/ sinh hoạt đoàn thể (không lý do)",
+                                "score": -1,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": 21,
+                        "content": "2.3 Tham gia các buổi hội thảo việc làm, định hướng nghề nghiệp do Học viện tổ chức (1 điểm/1 sự kiện tham gia, tổng điểm không vượt quá 5 điểm",
+                        "max_score": 5,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": [
+                            {
+                                "id": 22,
+                                "content": "Vắng 01 buổi",
+                                "score": -2,
+                                "student_score": null,
+                                "class_committee_score": null,
+                                "academic_advisor_score": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "score": 0,
+                "criterion_name": "Tiêu chí 3: Đánh giá về ý thức và kết quả tham gia hoạt động chính trị- xã hội, văn hóa, văn nghệ, thể thao, phòng chống tội phạm và  các tệ nạn xã hội ",
+                "max_score": 20,
+                "evaluation_contents": [
+                    {
+                        "id": 23,
+                        "content": "3.1 Tham gia đầy đủ các hoạt động chính trị, xã hội, các hoạt động văn hóa, văn nghệ, thể thao, phong trào tình nguyện, các buổi sinh hoạt chuyên đề do Học viện, lớp/chi đoàn, địa phương nơi cư trú  tổ chức  (2 điểm/1 hoạt động, tổng điểm không vượt quá 10 điểm)",
+                        "max_score": 10,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 24,
+                        "content": "3.2 Tham gia công tác xã hội như: hiến máu nhân đạo, ủng hộ người nghèo gặp thiên tai lũ lụt và các công tác xã hội khác (1 điểm/1 hoạt động tham gia, tổng điểm không vượt quá 4 điểm)",
+                        "max_score": 4,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 25,
+                        "content": "3.3 Tuyên truyền tích cực hình ảnh về Trường/Khoa trên các trang mạng xã hội (1 điểm/1 hoạt động, tổng điểm không vượt quá 3 điểm)",
+                        "max_score": 3,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 26,
+                        "content": "3.4 Tích cực tham gia các hoạt động phòng, chống tội phạm, các tệ nạn xã hội, phát hiện và báo cáo kịp thời những hành vi có liên quan đến ma túy, các tệ nạn xã hội khác",
+                        "max_score": 3,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 27,
+                        "content": "3.5 Đưa các thông tin sai lệch, thông tin chưa được kiểm chứng, đăng bình luận không chính xác, thiếu tích cực về Học viện/ Khoa/ ngành đang học.",
+                        "max_score": -10,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "score": 0,
+                "criterion_name": "Tiêu chí 4: Đánh giá ý thức công dân trong quan hệ cộng đồng",
+                "max_score": 25,
+                "evaluation_contents": [
+                    {
+                        "id": 28,
+                        "content": "4.1 Chấp hành nghiêm chỉnh chủ trương của Đảng, chính sách, pháp luật của Nhà nước, Học viện và của địa phương nơi cư trú",
+                        "max_score": 8,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 29,
+                        "content": "4.2 Tích cực tham gia tuyên truyền chủ trương của Đảng, chính sách, pháp luật của Nhà nước, Học viện  và quy định của địa phương nơi cư trú; có ý thức thực hiện giữ gìn vệ sinh chung",
+                        "max_score": 5,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 30,
+                        "content": "4.3 Có mối quan hệ đúng mực với Thầy/ Cô, cán bộ, nhân viên Học viện",
+                        "max_score": 5,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 31,
+                        "content": "4.4 Có mối quan hệ tốt với bạn bè trong lớp và mọi người xung quanh; có tinh thần đoàn kết, chia sẻ, giúp đỡ nhau trong học tập và các vấn đề khác trong cộng đồng",
+                        "max_score": 5,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 32,
+                        "content": "4.5 Được biểu dương khen thưởng trong các hoạt động liên quan đến ý thức công dân trong quan hệ cộng đồng",
+                        "max_score": 2,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 33,
+                        "content": "4.6 Vi phạm an ninh, trật tự xã hội; an toàn giao thông (có giấy báo của các cơ quan hữu quan)",
+                        "max_score": -5,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "score": 0,
+                "criterion_name": "Tiêu chí 5: Đánh giá về ý thức và kết quả tham gia phụ trách lớp, các đoàn thể trong nhà trường, thành tích đặc biệt trong học tập và rèn luyện",
+                "max_score": 10,
+                "evaluation_contents": [
+                    {
+                        "id": 34,
+                        "content": "5.1 Sinh viên được Học viện phân công làm lớp trưởng, lớp phó; bí thư, phó bí thư chi đoàn, BCH đoàn Học viện/khoa; BCH Hội sinh viên Học viện/khoa; chủ nhiệm, phó chủ nhiệm các các Câu lạc bộ, đội nhóm trực thuộc Học viện/khoa được tập thể sinh viên và đơn vị quản lý ghi nhận hoàn thành nhiệm vụ. ",
+                        "max_score": 4,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 35,
+                        "content": "5.2 Thành viên tham gia các Câu lạc bộ, đội nhóm trực thuộc Học viện /khoa được tập thể sinh viên và đơn vị quản lý ghi nhận hoàn thành tốt nhiệm vụ; sinh viên tham gia tổ chức các chương trình, là cộng tác viên tham gia tích cực vào các hoạt động chung cấp Học viện, khoa.",
+                        "max_score": 3,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    },
+                    {
+                        "id": 36,
+                        "content": "5.3 Sinh viên đạt thành tích đặc biệt trong học tập, rèn luyện:\r\n- Đạt giải thưởng trong nghiên cứu khoa học, các cuộc thi Olympic các cấp.\r\n- Đạt huy chương, giấy khen, giải thưởng các cấp về văn hóa, văn nghệ, thể thao, phòng chống các tệ nạn xã hội, hoạt động vì cộng đồng...\r\n",
+                        "max_score": 3,
+                        "total_student_score": 0,
+                        "total_class_committee_score": 0,
+                        "total_academic_advisor_score": 0,
+                        "evaluation_content_details": null
+                    }
+                ]
+            }
+        ],
+        "status": "WAIT_STUDENT",
+        "total_score": 0
+    }
+}
+
+api ban cán sự sẽ đánh giá các sinh viên trong lớp ở CVHT
+POST: http://localhost:8080/api/v1/advisor/training-scores/6
+Authorization
+Bearer Token
+Token
+<token>
+
+Body
+raw (json)
+{
+    "training_score_details": [
+        {
+            "evaluation_content_id": 1,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 2,
+            "score": 10
+        },
+	    {
+            "evaluation_content_id": 3,
+            "score": 10
+        },
+        {
+            "evaluation_content_id": 4,
+            "score": 0
+        },
+	    {
+            "evaluation_content_id": 5,
+            "score": 0
+        },
+	    {
+            "evaluation_content_id": 6,
+            "score": 0
+        },
+	    {
+            "evaluation_content_id": 7,
+            "score": 0
+        },
+	    {
+            "evaluation_content_id": 8,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 9,
+            "score": 2
+        },
+        {
+            "evaluation_content_id": 10,
+            "score": -2
+        },
+	    {
+            "evaluation_content_id": 11,
+            "score": 0
+        },
+	    {
+            "evaluation_content_id": 12,
+            "score": 0
+        },
+	    {
+            "evaluation_content_id": 13,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 14,
+            "score": 2
+        },
+        {
+            "evaluation_content_id": 15,
+            "score": 1
+        },
+        {
+            "evaluation_content_id": 16,
+            "score": 15
+        },
+	    {
+            "evaluation_content_id": 17,
+            "score": 0
+        },
+	    {
+            "evaluation_content_id": 18,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 19,
+            "score": 4
+        },
+        {
+            "evaluation_content_id": 20,
+            "score": -1
+        },
+        {
+            "evaluation_content_id": 21,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 22,
+            "score": -2
+        },
+        {
+            "evaluation_content_id": 23,
+            "score": 10
+        },
+        {
+            "evaluation_content_id": 24,
+            "score": 4
+        },
+        {
+            "evaluation_content_id": 25,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 26,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 27,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 28,
+            "score": 8
+        },
+        {
+            "evaluation_content_id": 29,
+            "score": 5
+        },
+        {
+            "evaluation_content_id": 30,
+            "score": 5
+        },
+        {
+            "evaluation_content_id": 31,
+            "score": 5
+        },
+        {
+            "evaluation_content_id": 32,
+            "score": 2
+        },
+        {
+            "evaluation_content_id": 33,
+            "score": 0
+        },
+        {
+            "evaluation_content_id": 34,
+            "score": 4
+        },
+        {
+            "evaluation_content_id": 35,
+            "score": 3
+        },
+        {
+            "evaluation_content_id": 36,
+            "score": 3
+        }
+    ]
+}
+
