@@ -1,0 +1,99 @@
+api tạo điểm rèn luyện cho tất cả sinh viên trong học kỳ nếu class_id null.
+Còn nếu có mã class_id thì tạo điểm rèn luyện cho 
+
+POST: http://localhost:8080/api/v1/department/training-scores/create
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Body
+raw (json)
+{
+    "class_id": null,
+    "semester_id": 4,
+    "start_date": "2025-06-30T07:21:00",
+    "end_date": "2025-07-15T07:21:00"
+}
+
+{
+    "status_code": 201,
+    "error": null,
+    "details": null,
+    "message": "Tạo điểm rèn luyện mới cho tất cả sinh viên trong lớp và học kỳ",
+    "data": {
+        "response_message": "Tạo điểm rèn luyện mới cho tất cả sinh viên trong lớp E22CQCN02 trong học kỳ 2 2023-2024"
+    }
+}
+
+api lấy ra học kỳ hiện tại. hãy dùng để truyền vào body tạo điểm rèn luyện
+GET: http://localhost:8080/api/v1/home/current-semester
+no auth
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Học kỳ hiện tại",
+    "data": {
+        "id": 6,
+        "order": 2,
+        "academicYear": "2024-2025"
+    }
+}
+
+api show thời gian điểm rèn luyện nếu có tạo
+GET: http://localhost:8080/api/v1/department/training-scores/time?semesterId=2
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params
+classId có thể có hoặc không 
+semesterId
+2
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy thông tin thời gian bắt đầu và kết thúc điểm rèn luyện theo lớp hoặc tất cả ở kỳ hiện tại",
+    "data": {
+        "semester_id": 2,
+        "semester_order": 2,
+        "semester_year": "2022-2023",
+        "start_date": "2025-06-13T07:30:00",
+        "end_date": "2025-07-12T10:30:00"
+    }
+}
+
+api điều chỉnh thời gian điểm rèn luyện
+PUT: http://localhost:8080/api/v1/department/training-scores/adjust-time
+Authorization
+Bearer Token
+Token <token>
+{
+    "class_id": "E22CQCN02",
+    "semester_id": "2",
+    "start_date": "2025-06-13T07:30:00",
+    "end_date": "2025-07-12T10:30:00"
+}
+
+yêu cầu: Hãy tạo cho tôi thêm 2 nút là thêm điểm rèn luyện cho học kỳ mới và điều chỉnh thời gian điểm rèn luyện
++ khi nhấn vào nút thêm thì show ra form prop gồm 2 form có thể chuyển qua lại là lớp và all
+    Nếu lớp:
+        có 2 dropdown là chọn khoa, sau đó chọn lớp
+        ô hiện chi tiết học kỳ Order năm academicYear
+        2 ô chọn thời gian datatime (chú ý format hiện thị dd/MM/yyyy hh:mm:ss tt nhưng trả về cho body nhớ chuẩn 2025-06-13T07:30:00)
+        (bắt validate thời gian bắt đầu phải từ hiện tại trở đi và nhỏ hơn thời gian kết thúc)
+        -> Nhấn tạo thì hiện alert hỏi có chắc chắn không nếu ok thì gọi api tạo với classId khác null
+    Nếu all:
+        ô hiện chi tiết học kỳ Order năm academicYear
+        2 ô chọn thời gian datatime (chú ý format hiện thị dd/MM/yyyy hh:mm:ss tt nhưng trả về cho body nhớ chuẩn 2025-06-13T07:30:00)
+        (bắt validate thời gian bắt đầu phải từ hiện tại trở đi và nhỏ hơn thời gian kết thúc)
+        -> Nhấn tạo thì hiện alert hỏi có chắc chắn không nếu ok thì gọi api tạo với classId = null
+Tương tự nút chỉnh sửa cũng xử lý như vậy
+    Khi nhấn nút điều chỉnh thì dùng api lấy thời gian đã tạo hiện lên nếu không thì báo chưa tạo 
+    Khi hỏi alert nhấn ok gọi api điều chỉnh, việc bắt validate thời gian tùy chỉnh
+
+    

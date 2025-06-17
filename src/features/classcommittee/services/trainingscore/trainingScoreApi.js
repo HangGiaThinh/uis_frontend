@@ -12,6 +12,10 @@ const trainingScoreApi = {
   getTrainingScores: (semesterId) => {
     return api.get(`/v1/class-committee/training-scores?semesterId=${semesterId}`);
   },
+
+  getStatistics: (semesterId) => {
+    return api.get(`/v1/class-committee/training-scores/statistics?semesterId=${semesterId}`);
+  },
 };
 
 export default trainingScoreApi; 

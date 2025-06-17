@@ -1,0 +1,121 @@
+api lấy danh sách khoa
+GET: http://localhost:8080/api/v1/department/faculties
+
+Authorization
+Bearer Token
+Token <token>
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Danh sách khoa",
+    "data": [
+        {
+            "departmentId": "CNTT",
+            "departmentName": "Công nghệ Thông tin",
+            "type": true
+        },
+        {
+            "departmentId": "KT",
+            "departmentName": "An toàn thông tin",
+            "type": true
+        }
+    ]
+}
+
+api lấy tất cả các lớp từ khoa
+GET: http://localhost:8080/api/v1/department/classes?facultyId=CNTT
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params
+facultyId
+CNTT
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Danh sách lớp của khoa",
+    "data": [
+        {
+            "class_id": "D22CQCN01",
+            "major": "Công nghệ thông tin",
+            "education_level": "Đại trà",
+            "academic_year": "2022-2027",
+            "quantity_student": 0
+        },
+        {
+            "class_id": "E22CQCN01",
+            "major": "Công nghệ thông tin",
+            "education_level": "CLC",
+            "academic_year": "2022-2027",
+            "quantity_student": 0
+        },
+        {
+            "class_id": "E22CQCN02",
+            "major": "Công nghệ thông tin",
+            "education_level": "CLC",
+            "academic_year": "2022-2027",
+            "quantity_student": 2
+        },
+        {
+            "class_id": "L01",
+            "major": "Công nghệ Thông tin",
+            "education_level": "Đại trà",
+            "academic_year": "2023-2027",
+            "quantity_student": 0
+        }
+    ]
+}
+
+api lấy ra danh sách học kỳ của lớp
+GET: http://localhost:8080/api/v1/department/semesters/D22CQCN01
+
+Authorization
+Bearer Token
+Token
+<token>
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Danh sách học kỳ của lớp",
+    "data": [
+        {
+            "id": 6,
+            "order": 2,
+            "academicYear": "2024-2025"
+        },
+        {
+            "id": 5,
+            "order": 1,
+            "academicYear": "2024-2025"
+        },
+        {
+            "id": 4,
+            "order": 2,
+            "academicYear": "2023-2024"
+        },
+        {
+            "id": 3,
+            "order": 1,
+            "academicYear": "2023-2024"
+        },
+        {
+            "id": 2,
+            "order": 2,
+            "academicYear": "2022-2023"
+        },
+        {
+            "id": 1,
+            "order": 1,
+            "academicYear": "2022-2023"
+        }
+    ]
+}

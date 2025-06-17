@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../../services/api';
+import trainingScoreApi from '../../services/trainingscore/trainingScoreApi';
+import StatisticsModal from './StatisticsModal';
 
 const STATUS_MAP = {
   WAIT_STUDENT: { label: 'Chờ sinh viên', color: 'bg-yellow-100 text-yellow-800 border-yellow-400' },
@@ -9,6 +10,7 @@ const STATUS_MAP = {
   WAIT_FACULTY: { label: 'Chờ khoa', color: 'bg-purple-100 text-purple-800 border-purple-400' },
   WAIT_DEPARTMENT: { label: 'Chờ phòng CTSV', color: 'bg-pink-100 text-pink-800 border-pink-400' },
   COMPLETED: { label: 'Hoàn thành', color: 'bg-green-100 text-green-800 border-green-400' },
+  EXPIRED: { label: 'Hết hạn', color: 'bg-red-100 text-red-800 border-red-400' },
 };
 
 const CLASSIFY_MAP = {
@@ -27,13 +29,16 @@ function TrainingScoreTable() {
   const [loading, setLoading] = useState(false);
   const [classInfo, setClassInfo] = useState(null);
   const [showClassInfo, setShowClassInfo] = useState(false);
+  const [statisticsModal, setStatisticsModal] = useState(false);
+  const [statistics, setStatistics] = useState(null);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/v1/advisor/semesters').then(res => {
+    trainingScoreApi.getSemesters().then(res => {
       setSemesters(res.data.data || []);
     });
-    api.get('/v1/advisor/class-name').then(res => {
+    trainingScoreApi.getClassName().then(res => {
       setClassInfo(res.data.data);
     });
   }, []);
@@ -41,8 +46,8 @@ function TrainingScoreTable() {
   useEffect(() => {
     if (selectedSemester) {
       setLoading(true);
-      api
-        .get(`/v1/advisor/training-scores?semesterId=${selectedSemester}`)
+      trainingScoreApi
+        .getTrainingScores(selectedSemester)
         .then(res => {
           setScores(res.data.data || []);
         })
@@ -51,6 +56,22 @@ function TrainingScoreTable() {
       setScores([]);
     }
   }, [selectedSemester]);
+
+  const handleViewStatistics = async () => {
+    if (selectedSemester) {
+      setStatisticsLoading(true);
+      setStatisticsModal(true);
+      try {
+        const res = await trainingScoreApi.getStatistics(selectedSemester);
+        setStatistics(res.data.data);
+      } catch (error) {
+        console.error('Error fetching statistics:', error);
+        setStatistics(null);
+      } finally {
+        setStatisticsLoading(false);
+      }
+    }
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-[#40ACE9]">
@@ -90,6 +111,14 @@ function TrainingScoreTable() {
             </option>
           ))}
         </select>
+        {selectedSemester && (
+          <button
+            onClick={handleViewStatistics}
+            className="ml-auto px-4 py-2 bg-[#40ACE9] text-white rounded hover:bg-[#2696c8] transition font-semibold"
+          >
+            📊 Xem thống kê
+          </button>
+        )}
       </div>
       {selectedSemester && (
         <div className="overflow-x-auto mt-4">
@@ -146,6 +175,13 @@ function TrainingScoreTable() {
           </table>
         </div>
       )}
+      
+      <StatisticsModal
+        isOpen={statisticsModal}
+        onClose={() => setStatisticsModal(false)}
+        statistics={statistics}
+        loading={statisticsLoading}
+      />
     </div>
   );
 }

@@ -15,6 +15,10 @@ import TrainingScoreManagePage from "./features/advisor/pages/TrainingScoreManag
 import AdvisorTrainingScoreDetailPage from "./features/advisor/pages/TrainingScoreDetailPage";
 import ClassCommitteeTrainingScoreManagePage from "./features/classcommittee/pages/TrainingScoreManagePage";
 import ClassCommitteeTrainingScoreDetailPage from "./features/classcommittee/pages/TrainingScoreDetailPage";
+import FacultyTrainingScoreManagePage from "./features/faculty/pages/TrainingScoreManagePage";
+import FacultyTrainingScoreDetailPage from "./features/faculty/pages/TrainingScoreDetailPage";
+import DepartmentTrainingScoreManagePage from "./features/department/pages/TrainingScoreManagePage";
+import DepartmentTrainingScoreDetailPage from "./features/department/pages/TrainingScoreDetailPage";
 import AnnouncementListPage from "./features/user/pages/AnnouncementListPage";
 import AnnouncementDetailPage from "./features/user/pages/AnnouncementDetailPage";
 import ForgotPasswordPage from "./features/user/pages/ForgotPasswordPage";
@@ -123,6 +127,38 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["CLASS_COMMITTEE"]}>
                 <ClassCommitteeTrainingScoreDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/faculty/training-scores"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_FACULTY"]}>
+                <FacultyTrainingScoreManagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/faculty/training-scores/:id"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_FACULTY"]}>
+                <FacultyTrainingScoreDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/department/training-scores"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
+                <DepartmentTrainingScoreManagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/department/training-scores/:id"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
+                <DepartmentTrainingScoreDetailPage />
               </ProtectedRoute>
             }
           />

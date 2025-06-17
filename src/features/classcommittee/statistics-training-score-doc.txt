@@ -1,0 +1,58 @@
+api đối với ban cán sự (CLASS_COMMITTEECOMMITTEE)
+GET: http://localhost:8080/api/v1/class-committee/training-scores/statistics?semesterId=1
+Authorization
+Bearer Token
+Token <token>
+
+Query Params
+semesterId
+1
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Thống kê điểm rèn luyện của sinh viên theo lớp và học kỳ",
+    "data": {
+        "class_id": "E22CQCN02",
+        "semester_order": "1",
+        "semester_year": "2022-2023",
+        "total_student": 2,
+        "total_excellent": 1,
+        "total_good": 1,
+        "total_fair": 0,
+        "total_average": 0,
+        "total_weak": 0,
+        "total_poor": 0
+    }
+}
+
+api đối với CVHT (ACADEMIC_ADVISOR)
+GET: http://localhost:8080/api/v1/advisor/training-scores/statistics?semesterId=1
+Authorization
+Bearer Token
+Token <token>
+
+Query Params
+semesterId
+1
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Thống kê điểm rèn luyện của sinh viên theo lớp và học kỳ",
+    "data": {
+        "class_id": "E22CQCN02",
+        "semester_order": "1",
+        "semester_year": "2022-2023",
+        "total_student": 2,
+        "total_excellent": 1,
+        "total_good": 1,
+        "total_fair": 0,
+        "total_average": 0,
+        "total_weak": 0,
+        "total_poor": 0
+    }
+}
+

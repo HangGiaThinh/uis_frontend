@@ -1,0 +1,227 @@
+api lấy danh sách lớp đổ vào dropdown
+GET: http://localhost:8080/api/v1/faculty/classes
+
+Authorization
+Bearer Token
+Token
+<token>
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Danh sách lớp của khoa",
+    "data": [
+        {
+            "class_id": "D22CQCN01",
+            "major": "Công nghệ thông tin",
+            "education_level": "Đại trà",
+            "academic_year": "2022-2027",
+            "quantity_student": 0
+        },
+        {
+            "class_id": "E22CQCN01",
+            "major": "Công nghệ thông tin",
+            "education_level": "CLC",
+            "academic_year": "2022-2027",
+            "quantity_student": 0
+        },
+        {
+            "class_id": "E22CQCN02",
+            "major": "Công nghệ thông tin",
+            "education_level": "CLC",
+            "academic_year": "2022-2027",
+            "quantity_student": 2
+        },
+        {
+            "class_id": "L01",
+            "major": "Công nghệ Thông tin",
+            "education_level": "Đại trà",
+            "academic_year": "2023-2027",
+            "quantity_student": 0
+        }
+    ]
+}
+
+api xem học kỳ của lớp
+GET: http://localhost:8080/api/v1/faculty/semesters?classId=E22CQCN02
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params
+classId
+E22CQCN02
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Danh sách học kỳ của lớp",
+    "data": [
+        {
+            "id": 6,
+            "order": 2,
+            "academicYear": "2024-2025"
+        },
+        {
+            "id": 5,
+            "order": 1,
+            "academicYear": "2024-2025"
+        },
+        {
+            "id": 4,
+            "order": 2,
+            "academicYear": "2023-2024"
+        },
+        {
+            "id": 3,
+            "order": 1,
+            "academicYear": "2023-2024"
+        },
+        {
+            "id": 2,
+            "order": 2,
+            "academicYear": "2022-2023"
+        },
+        {
+            "id": 1,
+            "order": 1,
+            "academicYear": "2022-2023"
+        }
+    ]
+}
+
+api xem table danh sách bảng điểm rèn luyện
+GET: http://localhost:8080/api/v1/faculty/training-scores?classId=E22CQCN02&semesterId=1
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params
+classId
+E22CQCN02
+
+semesterId
+1
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy danh sách điểm rèn luyện theo lớp và học kỳ",
+    "data": [
+        {
+            "id": 6,
+            "studentId": "N22DCVT076",
+            "studentFirstName": "Quang",
+            "studentLastName": "Nguyễn Văn",
+            "departmentCriteriaResponses": [
+                {
+                    "id": 1,
+                    "name": "Tiêu chí 1: Đánh giá về ý thức tham gia học tập",
+                    "score": 18
+                },
+                {
+                    "id": 2,
+                    "name": "Tiêu chí 2: Đánh giá về ý thức chấp hành nội quy, quy chế, quy định của Học viện",
+                    "score": 22
+                },
+                {
+                    "id": 3,
+                    "name": "Tiêu chí 3: Đánh giá về ý thức và kết quả tham gia hoạt động chính trị- xã hội, văn hóa, văn nghệ, thể thao, phòng chống tội phạm và  các tệ nạn xã hội ",
+                    "score": 20
+                },
+                {
+                    "id": 4,
+                    "name": "Tiêu chí 4: Đánh giá ý thức công dân trong quan hệ cộng đồng",
+                    "score": 25
+                },
+                {
+                    "id": 5,
+                    "name": "Tiêu chí 5: Đánh giá về ý thức và kết quả tham gia phụ trách lớp, các đoàn thể trong nhà trường, thành tích đặc biệt trong học tập và rèn luyện",
+                    "score": 10
+                }
+            ],
+            "totalScore": 95,
+            "status": "WAIT_FACULTY"
+        },
+        {
+            "id": 7,
+            "studentId": "N22DCVT093",
+            "studentFirstName": "Thịnh",
+            "studentLastName": "Hàng Gia",
+            "departmentCriteriaResponses": [
+                {
+                    "id": 1,
+                    "name": "Tiêu chí 1: Đánh giá về ý thức tham gia học tập",
+                    "score": 3
+                },
+                {
+                    "id": 2,
+                    "name": "Tiêu chí 2: Đánh giá về ý thức chấp hành nội quy, quy chế, quy định của Học viện",
+                    "score": 0
+                },
+                {
+                    "id": 3,
+                    "name": "Tiêu chí 3: Đánh giá về ý thức và kết quả tham gia hoạt động chính trị- xã hội, văn hóa, văn nghệ, thể thao, phòng chống tội phạm và  các tệ nạn xã hội ",
+                    "score": 0
+                },
+                {
+                    "id": 4,
+                    "name": "Tiêu chí 4: Đánh giá ý thức công dân trong quan hệ cộng đồng",
+                    "score": 0
+                },
+                {
+                    "id": 5,
+                    "name": "Tiêu chí 5: Đánh giá về ý thức và kết quả tham gia phụ trách lớp, các đoàn thể trong nhà trường, thành tích đặc biệt trong học tập và rèn luyện",
+                    "score": 0
+                }
+            ],
+            "totalScore": 3,
+            "status": "WAIT_FACULTY"
+        }
+    ]
+}
+
+api xem thống kê đrl
+GET: http://localhost:8080/api/v1/faculty/training-scores/statistics?classId=E22CQCN02&semesterId=3
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params
+classId
+E22CQCN02
+
+semesterId
+3
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Thống kê điểm rèn luyện của sinh viên theo lớp và học kỳ",
+    "data": {
+        "class_id": "E22CQCN02",
+        "semester_order": "1",
+        "semester_year": "2023-2024",
+        "total_student": 2,
+        "total_excellent": 1,
+        "total_good": 0,
+        "total_fair": 0,
+        "total_average": 0,
+        "total_weak": 0,
+        "total_poor": 1
+    }
+}
+
+tương tự api đối với EMPLOYEE_DEPARTMENT
+GET: http://localhost:8080/api/v1/department/classes
+GET: http://localhost:8080/api/v1/department/training-scores?classId=E22CQCN02&semesterId=1
+GET: http://localhost:8080/api/v1/department/training-scores/statistics?classId=E22CQCN02&semesterId=3
+

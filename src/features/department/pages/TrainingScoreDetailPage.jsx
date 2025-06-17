@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaPaperPlane, FaCheck, FaArrowLeft } from 'react-icons/fa';
-
+import trainingScoreApi from '../services/trainingscore/trainingScoreApi';
 
 const TrainingScoreDetailPage = () => {
   const { id } = useParams();
@@ -38,16 +37,7 @@ const TrainingScoreDetailPage = () => {
   useEffect(() => {
     const fetchTrainingScore = async () => {
       try {
-        const token = localStorage.getItem('token');
-
-        const response = await axios.get(
-          `http://localhost:8080/api/v1/class-committee/training-scores/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await trainingScoreApi.getTrainingScoreDetail(id);
         setTrainingScoreData(response.data.data);
 
         // Set selected radio for content 1.2
@@ -56,17 +46,17 @@ const TrainingScoreDetailPage = () => {
           const content2 = criterion1.evaluation_contents.find(c => c.id === 2);
           if (content2 && content2.evaluation_content_details) {
             const selectedNonZeroDetail = content2.evaluation_content_details.find(
-              d => d.id >= 3 && d.id <= 6 && d.class_committee_score === d.score && d.score !== 0
+              d => d.id >= 3 && d.id <= 6 && d.academic_advisor_score === d.score && d.score !== 0
             );
 
             if (selectedNonZeroDetail) {
               setSelectedRadio1_2(selectedNonZeroDetail.id);
             } else {
               const selectedZeroDetail = content2.evaluation_content_details.find(
-                d => d.id === 7 && d.class_committee_score === d.score && d.score === 0
+                d => d.id === 7 && d.academic_advisor_score === d.score && d.score === 0
               );
               const anyOtherRadioSelectedNonZero = content2.evaluation_content_details.some(
-                d => d.id >= 3 && d.id <= 6 && d.class_committee_score === d.score && d.score !== 0
+                d => d.id >= 3 && d.id <= 6 && d.academic_advisor_score === d.score && d.score !== 0
               );
 
               if (selectedZeroDetail && !anyOtherRadioSelectedNonZero) {
@@ -96,7 +86,7 @@ const TrainingScoreDetailPage = () => {
         // Check if content 1.2 (id=2) has no radio selected
         if (content.id === 2) {
           const hasRadioSelected = content.evaluation_content_details.some(
-            detail => detail.id >= 3 && detail.id <= 7 && detail.class_committee_score === detail.score
+            detail => detail.id >= 3 && detail.id <= 7 && detail.academic_advisor_score === detail.score
           );
           if (!hasRadioSelected) {
             errors.add(`content-${content.id}-radio`);
@@ -106,7 +96,7 @@ const TrainingScoreDetailPage = () => {
         // Check number inputs with 0 score (excluding content 2.2 and 2.3 details)
         if (content.evaluation_content_details === null) {
           // For direct input contents
-          if (content.total_class_committee_score === 0 && content.max_score > 0) {
+          if (content.total_academic_advisor_score === 0 && content.max_score > 0) {
             errors.add(`content-${content.id}`);
           }
         }
@@ -136,7 +126,7 @@ const TrainingScoreDetailPage = () => {
               if (contentId === 27 || contentId === 33) {
                 return {
                   ...content,
-                  total_class_committee_score: value ? content.max_score : 0
+                  total_academic_advisor_score: value ? content.max_score : 0
                 };
               }
               let newScore = parseInt(value);
@@ -145,7 +135,7 @@ const TrainingScoreDetailPage = () => {
               if (newScore < (content.max_score < 0 ? content.max_score : 0)) newScore = (content.max_score < 0 ? content.max_score : 0);
               return {
                 ...content,
-                total_class_committee_score: newScore,
+                total_academic_advisor_score: newScore,
               };
             } else if (content.evaluation_content_details) {
               let newDetails = [...content.evaluation_content_details];
@@ -154,7 +144,7 @@ const TrainingScoreDetailPage = () => {
                 if (detailId === 8) {
                   newDetails = newDetails.map(detail => {
                     if (detail.id === 8) {
-                      return { ...detail, class_committee_score: value ? detail.score : 0 };
+                      return { ...detail, academic_advisor_score: value ? detail.score : 0 };
                     }
                     return detail;
                   });
@@ -162,7 +152,7 @@ const TrainingScoreDetailPage = () => {
                   setSelectedRadio1_2(detailId);
                   newDetails = newDetails.map(detail => {
                     if (detail.id >= 3 && detail.id <= 7) {
-                      return { ...detail, class_committee_score: detail.id === detailId ? detail.score : 0 };
+                      return { ...detail, academic_advisor_score: detail.id === detailId ? detail.score : 0 };
                     }
                     return detail;
                   });
@@ -175,27 +165,27 @@ const TrainingScoreDetailPage = () => {
                       if (isNaN(incidents)) incidents = 0;
                       if (incidents < 0) incidents = 0;
                       if (incidents > 5) incidents = 5;
-                      return { ...detail, class_committee_score: incidents * detail.score };
+                      return { ...detail, academic_advisor_score: incidents * detail.score };
                     } else {
-                      return { ...detail, class_committee_score: value ? detail.score : 0 };
+                      return { ...detail, academic_advisor_score: value ? detail.score : 0 };
                     }
                   }
                   return detail;
                 });
               }
 
-              let newTotalClassCommitteeScore;
+              let newTotalAcademicAdvisorScore;
               if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
-                const deductions = newDetails.reduce((sum, detail) => sum + detail.class_committee_score, 0);
-                newTotalClassCommitteeScore = Math.max(0, content.max_score + deductions);
+                const deductions = newDetails.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
+                newTotalAcademicAdvisorScore = Math.max(0, content.max_score + deductions);
               } else {
-                newTotalClassCommitteeScore = newDetails.reduce((sum, detail) => sum + detail.class_committee_score, 0);
+                newTotalAcademicAdvisorScore = newDetails.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
               }
 
               return {
                 ...content,
                 evaluation_content_details: newDetails,
-                total_class_committee_score: newTotalClassCommitteeScore,
+                total_academic_advisor_score: newTotalAcademicAdvisorScore,
               };
             }
           }
@@ -226,7 +216,6 @@ const TrainingScoreDetailPage = () => {
     }
     
     try {
-      const token = localStorage.getItem('token');
       const trainingScoreDetails = [];
 
       // Create a map of all possible IDs (1-36) with default score 0
@@ -241,21 +230,21 @@ const TrainingScoreDetailPage = () => {
           if (content.evaluation_content_details) {
             // For content with details, send the details scores
             content.evaluation_content_details.forEach(detail => {
-              allScores.set(detail.id, detail.class_committee_score);
+              allScores.set(detail.id, detail.academic_advisor_score);
             });
             
             // Calculate and set the total score for the main content
             let calculatedTotal;
             if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
-              const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.class_committee_score, 0);
+              const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
               calculatedTotal = Math.max(0, content.max_score + deductions);
             } else {
-              calculatedTotal = content.evaluation_content_details.reduce((sum, detail) => sum + detail.class_committee_score, 0);
+              calculatedTotal = content.evaluation_content_details.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
             }
             allScores.set(content.id, calculatedTotal);
           } else {
             // For content without details, use the total score directly
-            allScores.set(content.id, content.total_class_committee_score);
+            allScores.set(content.id, content.total_academic_advisor_score);
           }
         });
       });
@@ -272,21 +261,12 @@ const TrainingScoreDetailPage = () => {
         training_score_details: trainingScoreDetails,
       };
 
-      await axios.post(
-        `http://localhost:8080/api/v1/class-committee/training-scores/${id}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      alert("Điểm rèn luyện đã được chấm thành công!");
+      await trainingScoreApi.updateTrainingScore(id, payload);
+      alert("Điểm rèn luyện đã được duyệt thành công!");
       navigate(-1);
     } catch (err) {
-      console.error("Lỗi khi chấm điểm rèn luyện:", err);
-      alert("Có lỗi xảy ra khi chấm điểm rèn luyện. Vui lòng thử lại.");
+      console.error("Lỗi khi duyệt điểm rèn luyện:", err);
+      alert("Có lỗi xảy ra khi duyệt điểm rèn luyện. Vui lòng thử lại.");
     }
   };
 
@@ -303,20 +283,20 @@ const TrainingScoreDetailPage = () => {
   }
 
   const { criterions, status, total_score } = trainingScoreData;
-  const isEditable = status === "WAIT_CLASS_COMMITTEE" && status !== "EXPIRED";
+  const isEditable = status === "WAIT_DEPARTMENT" && status !== "EXPIRED";
   const totalMaxScore = criterions.reduce((sum, criterion) => sum + criterion.max_score, 0);
 
-  const overallClassCommitteeTotalScore = criterions.reduce((criterionSum, criterion) => {
+  const overallAcademicAdvisorTotalScore = criterions.reduce((criterionSum, criterion) => {
     return criterionSum + criterion.evaluation_contents.reduce((contentSum, content) => {
       if (content.evaluation_content_details) {
         if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
-          const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.class_committee_score, 0);
+          const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
           return contentSum + Math.max(0, content.max_score + deductions);
         } else {
-          return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.class_committee_score, 0);
+          return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.academic_advisor_score, 0);
         }
       } else {
-        return contentSum + content.total_class_committee_score;
+        return contentSum + content.total_academic_advisor_score;
       }
     }, 0);
   }, 0);
@@ -328,7 +308,7 @@ const TrainingScoreDetailPage = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          Phiếu chấm điểm rèn luyện - Ban cán sự
+          Phiếu duyệt điểm rèn luyện - Phòng CTSV
         </div>
         <span className="ml-2 px-3 py-1 text-sm font-semibold rounded-full bg-white text-blue-800">
           {getStatusInVietnamese(status)}
@@ -362,8 +342,8 @@ const TrainingScoreDetailPage = () => {
             <th className="py-2 px-4 border border-gray-400 text-left">Nội dung đánh giá</th>
             <th className="py-2 px-4 border border-gray-400">Điểm quy định</th>
             <th className="py-2 px-4 border border-gray-400 text-center">SV đánh giá</th>
-            <th className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>Lớp đánh giá</th>
-            <th className="py-2 px-4 border border-gray-400 text-center">CVHT đánh giá</th>
+            <th className="py-2 px-4 border border-gray-400 text-center">Lớp đánh giá</th>
+            <th className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>CVHT đánh giá</th>
           </tr>
         </thead>
         <tbody>
@@ -391,7 +371,7 @@ const TrainingScoreDetailPage = () => {
                     }
                   }, 0)} điểm
                 </td>
-                <td className={`py-3 px-4 border border-gray-400 text-center font-medium ${isEditable ? 'bg-yellow-50' : ''}`}>
+                <td className="py-3 px-4 border border-gray-400 text-center font-medium">
                   {criterion.evaluation_contents.reduce((sum, content) => {
                     if (content.evaluation_content_details) {
                       if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
@@ -405,7 +385,7 @@ const TrainingScoreDetailPage = () => {
                     }
                   }, 0)} điểm
                 </td>
-                <td className="py-3 px-4 border border-gray-400 text-center font-medium">
+                <td className={`py-3 px-4 border border-gray-400 text-center font-medium ${isEditable ? 'bg-yellow-50' : ''}`}>
                   {criterion.evaluation_contents.reduce((sum, content) => {
                     if (content.evaluation_content_details) {
                       if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
@@ -445,12 +425,21 @@ const TrainingScoreDetailPage = () => {
                           content.total_student_score
                       )}
                     </td>
+                    <td className="py-2 px-4 border border-gray-400 text-center">
+                      {content.evaluation_content_details === null ? (
+                        content.total_class_committee_score
+                      ) : (
+                        (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
+                          Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.class_committee_score, 0)) :
+                          content.total_class_committee_score
+                      )}
+                    </td>
                     <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
                       {content.evaluation_content_details === null ? (
                         content.id === 27 || content.id === 33 ? (
                           <input
                             type="checkbox"
-                            checked={content.total_class_committee_score === content.max_score}
+                            checked={content.total_academic_advisor_score === content.max_score}
                             className="w-5 h-5 mx-auto text-center ml-3 border border-gray-400"
                             disabled={!isEditable}
                             onChange={(e) => handleScoreChange(content.id, null, e.target.checked ? content.max_score : 0)}
@@ -459,7 +448,7 @@ const TrainingScoreDetailPage = () => {
                           <div className="flex items-center justify-center">
                             <input
                               type="number"
-                              value={content.total_class_committee_score}
+                              value={content.total_academic_advisor_score}
                               className={`w-20 mx-auto text-center border ${showValidation && validationErrors.has(`content-${content.id}`) ? 'border-red-500' : 'border-gray-400'}`}
                               disabled={!isEditable}
                               onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
@@ -473,15 +462,8 @@ const TrainingScoreDetailPage = () => {
                         )
                       ) : (
                         (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
-                          Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.class_committee_score, 0)) :
-                          content.total_class_committee_score
-                      )}
-                    </td>
-                    <td className="py-2 px-4 border border-gray-400 text-center">
-                      {content.evaluation_content_details === null ? (
-                        content.total_academic_advisor_score
-                      ) : (
-                        content.total_academic_advisor_score
+                          Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.academic_advisor_score, 0)) :
+                          content.total_academic_advisor_score
                       )}
                     </td>
                   </tr>
@@ -506,7 +488,7 @@ const TrainingScoreDetailPage = () => {
                               <input
                                 type="number"
                                 id={`detail-${detail.id}`}
-                                value={detail.class_committee_score !== 0 ? Math.abs(detail.class_committee_score / detail.score) : ''}
+                                value={detail.academic_advisor_score !== 0 ? Math.abs(detail.academic_advisor_score / detail.score) : ''}
                                 className="mr-2 w-20 border border-gray-400"
                                 disabled={!isEditable}
                                 onChange={(e) => handleScoreChange(content.id, detail.id, e.target.value)}
@@ -517,7 +499,7 @@ const TrainingScoreDetailPage = () => {
                               <input
                                 type="checkbox"
                                 id={`detail-${detail.id}`}
-                                checked={detail.class_committee_score === detail.score}
+                                checked={detail.academic_advisor_score === detail.score}
                                 className="mr-2 border border-gray-400"
                                 disabled={!isEditable}
                                 onChange={(e) => handleScoreChange(content.id, detail.id, e.target.checked)}
@@ -531,10 +513,10 @@ const TrainingScoreDetailPage = () => {
                           <td className="py-2 px-4 border border-gray-400 text-center">
                             {detail.student_score}
                           </td>
+                          <td className="py-2 px-4 border border-gray-400 text-center">{detail.class_committee_score}</td>
                           <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
-                            {detail.class_committee_score}
+                            {detail.academic_advisor_score}
                           </td>
-                          <td className="py-2 px-4 border border-gray-400 text-center">{detail.academic_advisor_score}</td>
                         </tr>
                       ))}
                     </>
@@ -563,24 +545,24 @@ const TrainingScoreDetailPage = () => {
                 }, 0);
               }, 0)} điểm
             </td>
-            <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>
-              {overallClassCommitteeTotalScore} điểm
-            </td>
             <td className="py-2 px-4 border border-gray-400 text-center">
               {criterions.reduce((criterionSum, criterion) => {
                 return criterionSum + criterion.evaluation_contents.reduce((contentSum, content) => {
                   if (content.evaluation_content_details) {
                     if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
-                      const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.academic_advisor_score, 0);
+                      const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.class_committee_score, 0);
                       return contentSum + Math.max(0, content.max_score + deductions);
                     } else {
-                      return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.academic_advisor_score, 0);
+                      return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.class_committee_score, 0);
                     }
                   } else {
-                    return contentSum + content.total_academic_advisor_score;
+                    return contentSum + content.total_class_committee_score;
                   }
                 }, 0);
               }, 0)} điểm
+            </td>
+            <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>
+              {overallAcademicAdvisorTotalScore} điểm
             </td>
           </tr>
         </tbody>
@@ -606,8 +588,8 @@ const TrainingScoreDetailPage = () => {
                 </>
               ) : (
                 <>
-                  <FaPaperPlane className="text-sm" />
-                  Gửi
+                  <FaCheck className="text-sm" />
+                  Duyệt
                 </>
               )}
             </button>
