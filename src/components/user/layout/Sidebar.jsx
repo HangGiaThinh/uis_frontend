@@ -28,10 +28,12 @@ function Sidebar() {
                 { label: 'Quản lý điểm rèn luyện', path: '/faculty/training-scores' }
             ],
             EMPLOYEE_DEPARTMENT: [
-                { label: 'Tạo tài khoản', path: '/accounts/create' },
-                { label: 'Quản lý sinh viên', path: '/students/manage' },
+                { label: 'Quản lý tài khoản', path: '/accounts/manage' },
+                { label: 'Quản lý sinh viên', path: '/student/manage' },
                 { label: 'Quản lý điểm rèn luyện', path: '/department/training-scores' },
-                { label: 'Phản hồi khiếu nại', path: '/complaints/respond' }
+                { label: 'Phản hồi khiếu nại', path: '/complaints/respond' },
+                { label: 'Quản lý thông báo', path: '/announcements/manage' }
+
             ]
         };
 

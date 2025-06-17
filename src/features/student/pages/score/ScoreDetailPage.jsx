@@ -175,6 +175,17 @@ const ScoreDetailPage = () => {
         };
       });
 
+      // Kiểm tra xem có input nào có giá trị 0 không
+      const hasZero = newCriterions.some(criterion => 
+        criterion.evaluation_contents.some(content => {
+          if (content.evaluation_content_details) {
+            return content.evaluation_content_details.some(detail => detail.student_score === 0);
+          }
+          return content.total_student_score === 0;
+        })
+      );
+      setHasZeroScores(hasZero);
+
       return {
         ...prevData,
         criterions: newCriterions,
@@ -437,7 +448,7 @@ const ScoreDetailPage = () => {
                     <td className="py-2 px-4 border border-gray-400 text-center">
                       {content.max_score} điểm
                     </td>
-                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''} ${showAllWarnings && content.total_student_score === 0 && !(content.id === 2 && selectedRadio1_2) ? 'bg-red-100' : ''}`}>
                       {content.evaluation_content_details === null ? (
                         content.id === 27 || content.id === 33 ? (
                           <input
@@ -543,8 +554,15 @@ const ScoreDetailPage = () => {
                             </label>
                           </td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.score} điểm</td>
-                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
-                            {detail.student_score}
+                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''} ${showAllWarnings && detail.student_score === 0 && !(content.id === 2 && selectedRadio1_2) ? 'bg-red-100' : ''}`}>
+                            <div className="flex items-center justify-center">
+                              {detail.student_score}
+                              {showAllWarnings && detail.student_score === 0 && !(content.id === 2 && selectedRadio1_2) && (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
                           </td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.class_committee_score}</td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.academic_advisor_score}</td>
