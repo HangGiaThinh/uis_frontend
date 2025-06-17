@@ -24,6 +24,11 @@ import ChangePasswordPage from "./features/student/pages/profile/ChangePasswordP
 import ComplaintPage from "./features/student/pages/complaint/ComplaintPage";
 import ComplaintDetailPage from "./features/student/pages/complaint/ComplaintDetailPage";
 import CreateComplaintForm from "./features/student/components/complaint/CreateComplaintForm";
+import AccountManagementPage from "./features/department/pages/account/AccountManagementPage";
+import ComplaintManagementPage from "./features/department/pages/complaint/ComplaintManagementPage";
+import DepartmentComplaintDetailPage from "./features/department/pages/complaint/ComplaintDetailPage";
+import AnnouncementManagementPage from "./features/department/pages/announcement/AnnouncementManagementPage";
+import DepartmentAnnouncementDetailPage from "./features/department/pages/announcement/AnnouncementDetailPage";
 
 function App() {
   return (
@@ -128,6 +133,46 @@ function App() {
           />
           <Route path="/announcements" element={<AnnouncementListPage />} />
           <Route path="/announcements/:id" element={<AnnouncementDetailPage />} />
+          <Route
+            path="/accounts/manage"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
+                <AccountManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/complaints/respond"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
+                <ComplaintManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/complaints/respond/:id"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
+                <DepartmentComplaintDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/announcements/manage"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
+                <AnnouncementManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/announcements/manage/:id"
+            element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
+                <DepartmentAnnouncementDetailPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
         {/* Routes without MainLayout, like auth pages */}
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

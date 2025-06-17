@@ -9,6 +9,10 @@ const TrainingScoreDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedRadio1_2, setSelectedRadio1_2] = useState(null);
+  const [hasZeroScores, setHasZeroScores] = useState(false);
+  const [showZeroScoreWarning, setShowZeroScoreWarning] = useState(false);
+  const [showRequiredWarning1_2, setShowRequiredWarning1_2] = useState(false);
+  const [showAllWarnings, setShowAllWarnings] = useState(false);
 
   const getStatusInVietnamese = (status) => {
     switch (status) {
@@ -43,34 +47,7 @@ const TrainingScoreDetailPage = () => {
           }
         );
         setTrainingScoreData(response.data.data);
-
-        // Set selected radio for content 1.2
-        const criterion1 = response.data.data.criterions.find(c => c.id === 1);
-        if (criterion1) {
-          const content2 = criterion1.evaluation_contents.find(c => c.id === 2);
-          if (content2 && content2.evaluation_content_details) {
-            const selectedNonZeroDetail = content2.evaluation_content_details.find(
-              d => d.id >= 3 && d.id <= 6 && d.class_committee_score === d.score && d.score !== 0
-            );
-
-            if (selectedNonZeroDetail) {
-              setSelectedRadio1_2(selectedNonZeroDetail.id);
-            } else {
-              const selectedZeroDetail = content2.evaluation_content_details.find(
-                d => d.id === 7 && d.class_committee_score === d.score && d.score === 0
-              );
-              const anyOtherRadioSelectedNonZero = content2.evaluation_content_details.some(
-                d => d.id >= 3 && d.id <= 6 && d.class_committee_score === d.score && d.score !== 0
-              );
-
-              if (selectedZeroDetail && !anyOtherRadioSelectedNonZero) {
-                setSelectedRadio1_2(selectedZeroDetail.id);
-              } else {
-                setSelectedRadio1_2(null);
-              }
-            }
-          }
-        }
+        setSelectedRadio1_2(null); // Không chọn radio button nào khi mới vào trang
 
       } catch (err) {
         setError(err);
@@ -172,6 +149,38 @@ const TrainingScoreDetailPage = () => {
 
   const handleSubmit = async () => {
     try {
+      // Kiểm tra điểm 0 trước khi gửi (chỉ kiểm tra các mục có input số)
+      const hasZero = trainingScoreData.criterions.some(criterion => 
+        criterion.evaluation_contents.some(content => {
+          if (content.id === 2 && selectedRadio1_2) {
+            return false; // Bỏ qua kiểm tra mục 1.2 nếu đã chọn
+          }
+          if (content.evaluation_content_details) {
+            return content.evaluation_content_details.some(detail => {
+              // Loại trừ detail.id 20, 22 và các detail của content.id 9, 16 khỏi kiểm tra hasZero
+              if (!((detail.id === 20) || (detail.id === 22) || (detail.id >= 10 && detail.id <= 13) || (detail.id >= 17 && detail.id <= 18))) {
+                return detail.class_committee_score === 0;
+              }
+              return false;
+            });
+          }
+          // Chỉ kiểm tra các mục có input số (không phải checkbox và không phải mục 2.2, 2.3)
+          if (content.id !== 27 && content.id !== 33 && content.id !== 3 && content.id !== 4) {
+            return content.total_class_committee_score === 0;
+          }
+          return false;
+        })
+      );
+
+      if (!selectedRadio1_2 || hasZero) {
+        if (!showAllWarnings) {
+          setShowRequiredWarning1_2(!selectedRadio1_2);
+          setShowZeroScoreWarning(hasZero);
+          setShowAllWarnings(true);
+          return;
+        }
+      }
+
       const token = localStorage.getItem('token');
       const trainingScoreDetails = [];
 
@@ -255,6 +264,21 @@ const TrainingScoreDetailPage = () => {
     }, 0);
   }, 0);
 
+  const overallStudentTotalScore = criterions.reduce((criterionSum, criterion) => {
+    return criterionSum + criterion.evaluation_contents.reduce((contentSum, content) => {
+      if (content.evaluation_content_details) {
+        if (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) {
+          const deductions = content.evaluation_content_details.reduce((sum, detail) => sum + detail.student_score, 0);
+          return contentSum + Math.max(0, content.max_score + deductions);
+        } else {
+          return contentSum + content.evaluation_content_details.reduce((detailSum, detail) => detailSum + detail.student_score, 0);
+        }
+      } else {
+        return contentSum + content.total_student_score;
+      }
+    }, 0);
+  }, 0);
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4 flex items-center justify-between" style={{ backgroundColor: '#40ACE9', color: 'white', padding: '10px 20px', borderRadius: '8px' }}>
@@ -300,6 +324,9 @@ const TrainingScoreDetailPage = () => {
                     <td className="py-2 px-4 border border-gray-400 font-medium">{criterionIndex + 1}.{contentIndex + 1}</td>
                     <td className="py-2 px-4 border border-gray-400 font-medium">
                       {content.content}
+                      {content.id === 2 && showRequiredWarning1_2 && !selectedRadio1_2 && (
+                        <span className="text-red-500 ml-2 text-sm">(Bạn chưa lựa chọn kết quả học tập)</span>
+                      )}
                     </td>
                     <td className="py-2 px-4 border border-gray-400 text-center">
                       {content.max_score} điểm
@@ -313,7 +340,7 @@ const TrainingScoreDetailPage = () => {
                           content.total_student_score
                       )}
                     </td>
-                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''} ${showAllWarnings && content.total_class_committee_score === 0 && !(content.id === 2 && selectedRadio1_2) && content.id !== 27 && content.id !== 33 && content.id !== 3 && content.id !== 4 && content.id !== 9 && content.id !== 16 ? 'bg-red-100' : ''}`}>
                       {content.evaluation_content_details === null ? (
                         content.id === 27 || content.id === 33 ? (
                           <input
@@ -324,15 +351,22 @@ const TrainingScoreDetailPage = () => {
                             onChange={(e) => handleScoreChange(content.id, null, e.target.checked ? content.max_score : 0)}
                           />
                         ) : (
-                          <input
-                            type="number"
-                            value={content.total_class_committee_score}
-                            className="w-20 mx-auto text-center ml-3 border border-gray-400"
-                            disabled={!isEditable}
-                            onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
-                            max={content.max_score}
-                            min={content.max_score < 0 ? content.max_score : 0}
-                          />
+                          <div className="flex items-center justify-center">
+                            <input
+                              type="number"
+                              value={content.total_class_committee_score}
+                              className="w-20 mx-auto text-center ml-3 border border-gray-400"
+                              disabled={!isEditable}
+                              onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
+                              max={content.max_score}
+                              min={content.max_score < 0 ? content.max_score : 0}
+                            />
+                            {showAllWarnings && content.total_class_committee_score === 0 && !(content.id === 2 && selectedRadio1_2) && content.id !== 27 && content.id !== 33 && content.id !== 3 && content.id !== 4 && content.id !== 9 && content.id !== 16 && (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
                         )
                       ) : (
                         (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
@@ -394,8 +428,15 @@ const TrainingScoreDetailPage = () => {
                           <td className="py-2 px-4 border border-gray-400 text-center">
                             {detail.student_score}
                           </td>
-                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
-                            {detail.class_committee_score}
+                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''} ${showAllWarnings && detail.class_committee_score === 0 && !(content.id === 2 && selectedRadio1_2) && !((content.id === 19 && detail.id === 20) || (content.id === 21 && detail.id === 22) || content.id === 9 || content.id === 16) ? 'bg-red-100' : ''}`}>
+                            <div className="flex items-center justify-center">
+                              {detail.class_committee_score}
+                              {showAllWarnings && detail.class_committee_score === 0 && !(content.id === 2 && selectedRadio1_2) && !((content.id === 19 && detail.id === 20) || (content.id === 21 && detail.id === 22) || content.id === 9 || content.id === 16) && (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
                           </td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.academic_advisor_score}</td>
                         </tr>
@@ -410,27 +451,39 @@ const TrainingScoreDetailPage = () => {
             <td className="py-2 px-4 border border-gray-400"></td>
             <td className="py-2 px-4 border border-gray-400">Tổng điểm rèn luyện</td>
             <td className="py-2 px-4 border border-gray-400 text-center">{totalMaxScore} điểm</td>
-            <td className="py-2 px-4 border border-gray-400 text-center"></td>
+            <td className="py-2 px-4 border border-gray-400 text-center">Tổng: {overallStudentTotalScore} điểm</td>
             <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-100' : ''}`}>Tổng: {overallClassCommitteeTotalScore} điểm</td>
             <td className="py-2 px-4 border border-gray-400 text-center">{total_score} điểm</td>
           </tr>
         </tbody>
       </table>
-      <div className="mt-4 flex justify-end space-x-2">
-        {isEditable && (
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Chấm điểm
-          </button>
+      <div className="mt-4 flex flex-col items-end space-y-2">
+        {isEditable && (showZeroScoreWarning || showRequiredWarning1_2) && (
+          <div className="text-red-500 font-medium mb-2">
+            {showRequiredWarning1_2 && !selectedRadio1_2 && (
+              <div>Bạn chưa lựa chọn kết quả học tập</div>
+            )}
+            {showZeroScoreWarning && (
+              <div>Hãy kiểm tra lại những mục 0 điểm</div>
+            )}
+          </div>
         )}
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Quay lại
-        </button>
+        <div className="flex space-x-2">
+          {isEditable && (
+            <button
+              onClick={handleSubmit}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              {showZeroScoreWarning || showRequiredWarning1_2 ? 'Tiếp tục' : 'Gửi điểm'}
+            </button>
+          )}
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Quay lại
+          </button>
+        </div>
       </div>
     </div>
   );

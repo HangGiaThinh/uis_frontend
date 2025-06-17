@@ -10,6 +10,10 @@ const ScoreDetailPage = () => {
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [selectedRadio1_2, setSelectedRadio1_2] = useState(null);
+  const [hasZeroScores, setHasZeroScores] = useState(false);
+  const [showZeroScoreWarning, setShowZeroScoreWarning] = useState(false);
+  const [showRequiredWarning1_2, setShowRequiredWarning1_2] = useState(false);
+  const [showAllWarnings, setShowAllWarnings] = useState(false);
 
   const getStatusInVietnamese = (status) => {
     switch (status) {
@@ -165,6 +169,17 @@ const ScoreDetailPage = () => {
         };
       });
 
+      // Kiểm tra xem có input nào có giá trị 0 không
+      const hasZero = newCriterions.some(criterion => 
+        criterion.evaluation_contents.some(content => {
+          if (content.evaluation_content_details) {
+            return content.evaluation_content_details.some(detail => detail.student_score === 0);
+          }
+          return content.total_student_score === 0;
+        })
+      );
+      setHasZeroScores(hasZero);
+
       return {
         ...prevData,
         criterions: newCriterions,
@@ -174,6 +189,28 @@ const ScoreDetailPage = () => {
 
   const handleSubmit = async () => {
     try {
+      // Kiểm tra điểm 0 trước khi gửi (bỏ qua mục 1.2 nếu đã chọn)
+      const hasZero = trainingScoreData.criterions.some(criterion => 
+        criterion.evaluation_contents.some(content => {
+          if (content.id === 2 && selectedRadio1_2) {
+            return false; // Bỏ qua kiểm tra mục 1.2 nếu đã chọn
+          }
+          if (content.evaluation_content_details) {
+            return content.evaluation_content_details.some(detail => detail.student_score === 0);
+          }
+          return content.total_student_score === 0;
+        })
+      );
+
+      if (!selectedRadio1_2 || hasZero) {
+        if (!showAllWarnings) {
+          setShowRequiredWarning1_2(!selectedRadio1_2);
+          setShowZeroScoreWarning(hasZero);
+          setShowAllWarnings(true);
+          return;
+        }
+      }
+
       const token = localStorage.getItem('token');
       const trainingScoreDetails = [];
 
@@ -302,31 +339,41 @@ const ScoreDetailPage = () => {
                     <td className="py-2 px-4 border border-gray-400 font-medium">{criterionIndex + 1}.{contentIndex + 1}</td>
                     <td className="py-2 px-4 border border-gray-400 font-medium">
                       {content.content}
+                      {content.id === 2 && showRequiredWarning1_2 && !selectedRadio1_2 && (
+                        <span className="text-red-500 ml-2 text-sm">(Bạn chưa lựa chọn kết quả học tập)</span>
+                      )}
                     </td>
                     <td className="py-2 px-4 border border-gray-400 text-center">
                       {content.max_score} điểm
                     </td>
-                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
+                    <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''} ${showAllWarnings && content.total_student_score === 0 && !(content.id === 2 && selectedRadio1_2) ? 'bg-red-100' : ''}`}>
                       {content.evaluation_content_details === null ? (
                         content.id === 27 || content.id === 33 ? (
                           <input
-    type="checkbox"
-    checked={content.total_student_score === content.max_score}
-    className="w-5 h-5 mx-auto text-center ml-3 border border-gray-400"
-    disabled={!isEditable}
-    onChange={(e) => handleScoreChange(content.id, null, e.target.checked ? content.max_score : 0)}
-  />
-) : (
-  <input
-    type="number"
-    value={content.total_student_score}
-    className="w-20 mx-auto text-center ml-3 border border-gray-400"
-    disabled={!isEditable}
-    onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
-    max={content.max_score}
-    min={content.max_score < 0 ? content.max_score : 0}
-  />
-)
+                            type="checkbox"
+                            checked={content.total_student_score === content.max_score}
+                            className="w-5 h-5 mx-auto text-center ml-3 border border-gray-400"
+                            disabled={!isEditable}
+                            onChange={(e) => handleScoreChange(content.id, null, e.target.checked ? content.max_score : 0)}
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center">
+                            <input
+                              type="number"
+                              value={content.total_student_score}
+                              className="w-20 mx-auto text-center ml-3 border border-gray-400"
+                              disabled={!isEditable}
+                              onChange={(e) => handleScoreChange(content.id, null, e.target.value)}
+                              max={content.max_score}
+                              min={content.max_score < 0 ? content.max_score : 0}
+                            />
+                            {showAllWarnings && content.total_student_score === 0 && !(content.id === 2 && selectedRadio1_2) && (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        )
                       ) : (
                         (content.id === 9 || content.id === 16 || content.id === 19 || content.id === 21) ?
                           Math.max(0, content.max_score + content.evaluation_content_details.reduce((sum, detail) => sum + detail.student_score, 0)) :
@@ -407,8 +454,15 @@ const ScoreDetailPage = () => {
                             </label>
                           </td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.score} điểm</td>
-                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''}`}>
-                            {detail.student_score}
+                          <td className={`py-2 px-4 border border-gray-400 text-center ${isEditable ? 'bg-yellow-50' : ''} ${showAllWarnings && detail.student_score === 0 && !(content.id === 2 && selectedRadio1_2) ? 'bg-red-100' : ''}`}>
+                            <div className="flex items-center justify-center">
+                              {detail.student_score}
+                              {showAllWarnings && detail.student_score === 0 && !(content.id === 2 && selectedRadio1_2) && (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
                           </td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.class_committee_score}</td>
                           <td className="py-2 px-4 border border-gray-400 text-center">{detail.academic_advisor_score}</td>
@@ -430,21 +484,33 @@ const ScoreDetailPage = () => {
           </tr>
         </tbody>
       </table>
-      <div className="mt-4 flex justify-end space-x-2">
-        {isEditable && (
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Gửi
-          </button>
+      <div className="mt-4 flex flex-col items-end space-y-2">
+        {isEditable && (showZeroScoreWarning || showRequiredWarning1_2) && (
+          <div className="text-red-500 font-medium mb-2">
+            {showRequiredWarning1_2 && !selectedRadio1_2 && (
+              <div>Bạn chưa lựa chọn kết quả học tập</div>
+            )}
+            {showZeroScoreWarning && (
+              <div>Hãy kiểm tra lại những mục 0 điểm</div>
+            )}
+          </div>
         )}
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Quay lại
-        </button>
+        <div className="flex space-x-2">
+          {isEditable && (
+            <button
+              onClick={handleSubmit}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              {showZeroScoreWarning || showRequiredWarning1_2 ? 'Tiếp tục' : 'Gửi điểm'}
+            </button>
+          )}
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Quay lại
+          </button>
+        </div>
       </div>
     </div>
   );
