@@ -13,8 +13,7 @@ function Sidebar() {
         const roleFeatures = {
             STUDENT: [
                 { label: "Đánh giá điểm rèn luyện", path: "/scores" },
-                { label: "Gửi khiếu nại", path: "/complaints" },
-                { label: "Kết quả học tập", path: "/academic-results" }
+                { label: "Gửi khiếu nại", path: "/complaints" }
             ],
             CLASS_COMMITTEE: [
                 { label: 'Đánh giá điểm rèn luyện', path: '/scores' },

@@ -1,0 +1,137 @@
+api lấy danh sách thông báo để tạo bảng
+GET: http://localhost:8080/api/v1/home/announcements?page=1&size=5
+no auth
+Query Params
+page
+1
+
+size
+5
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy danh sách thông báo",
+    "data": {
+        "meta": {
+            "currentPage": 1,
+            "pageSize": 5,
+            "totalPages": 2,
+            "totalItems": 8
+        },
+        "data": [
+            {
+                "id": 11,
+                "title": "Học kỳ X",
+                "content": "Nội dung học kỳ X",
+                "attachmentUrl": null,
+                "sendDate": "2025-06-19T00:03:50.413"
+            },
+            {
+                "id": 10,
+                "title": "Học kỳ X",
+                "content": "Nội dung học kỳ X",
+                "attachmentUrl": null,
+                "sendDate": "2025-06-18T22:58:15.677"
+            },
+            {
+                "id": 9,
+                "title": "Chấm điểm rèn luyện học kỳ 2 2024-2025",
+                "content": "Nội dung chấm điểm rèn luyện",
+                "attachmentUrl": "https://d17p1008zsetln.cloudfront.net/temps/Th%C3%B4ng%20b%C3%A1o%20578%20vv%20h%C6%B0%E1%BB%9Bng%20d%E1%BA%ABn%20ch%E1%BA%A5m%20%C4%90RL%20HK1_2024_2025.pdf",
+                "sendDate": "2025-05-05T07:21:00"
+            },
+            {
+                "id": 8,
+                "title": "Chấm điểm rèn luyện học kỳ 1 2024-2025",
+                "content": "Nội dung chấm điểm rèn luyện",
+                "attachmentUrl": "https://d17p1008zsetln.cloudfront.net/temps/Th%C3%B4ng%20b%C3%A1o%20578%20vv%20h%C6%B0%E1%BB%9Bng%20d%E1%BA%ABn%20ch%E1%BA%A5m%20%C4%90RL%20HK1_2024_2025.pdf",
+                "sendDate": "2024-12-02T08:51:00"
+            },
+            {
+                "id": 7,
+                "title": "Chấm điểm rèn luyện học kỳ 2 2023-2024",
+                "content": "Nội dung chấm điểm rèn luyện",
+                "attachmentUrl": "https://d17p1008zsetln.cloudfront.net/temps/Th%C3%B4ng%20b%C3%A1o%20578%20vv%20h%C6%B0%E1%BB%9Bng%20d%E1%BA%ABn%20ch%E1%BA%A5m%20%C4%90RL%20HK1_2024_2025.pdf",
+                "sendDate": "2024-05-03T10:45:00"
+            }
+        ]
+    }
+}
+
+api xem chi tiết thông báo
+GET: http://localhost:8080/api/v1/home/announcements/1
+no auth
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy thông báo theo id",
+    "data": {
+        "id": 1,
+        "title": "Chấm điểm rèn luyện học kỳ 1 2022-2023",
+        "content": "Nội dung chấm điểm rèn luyện",
+        "attachmentUrl": "https://d17p1008zsetln.cloudfront.net/temps/Th%C3%B4ng%20b%C3%A1o%20578%20vv%20h%C6%B0%E1%BB%9Bng%20d%E1%BA%ABn%20ch%E1%BA%A5m%20%C4%90RL%20HK1_2024_2025.pdf",
+        "sendDate": "2022-12-01T08:00:00"
+    }
+}
+
+api tạo thông báo
+POST: http://localhost:8080/api/v1/department/announcements
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params
+attachment có hoặc không
+Body
+raw (json)
+
+{
+    "title": "Học kỳ X",
+    "content": "Nội dung học kỳ X"
+}
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Phòng CTSV tạo thông báo",
+    "data": {
+        "id": 11,
+        "title": "Học kỳ X",
+        "content": "Nội dung học kỳ X",
+        "attachmentUrl": null,
+        "sendDate": "2025-06-19T00:03:50.4138"
+    }
+}
+
+api chỉnh sửa thông báo
+PUT: http://localhost:8080/api/v1/department/announcements/1
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Query Params
+attachment có hoặc không
+Body
+raw (json)
+
+{
+    "title": "Học kỳ X",
+    "content": "Nội dung học kỳ X"
+}
+
+api xóa thông báo
+DELETE: http://localhost:8080/api/v1/department/announcements/1
+
+Authorization
+Bearer Token
+Token
+<token>
+

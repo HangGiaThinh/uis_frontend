@@ -18,9 +18,25 @@ const profileApi = {
         }
     },
 
-    updateProfile: async (data) => {
+    updateProfile: async (data, avatarFile = null) => {
         try {
             const token = localStorage.getItem("token");
+            
+            if (avatarFile) {
+                const formData = new FormData();
+                formData.append('avatar', avatarFile);
+                
+                // Upload avatar first
+                await api.put("/v1/student/profile", formData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                    params: { avatar: true }
+                });
+            }
+            
+            // Update profile data
             const response = await api.put("/v1/student/profile", data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -37,8 +53,29 @@ const profileApi = {
             throw error;
         }
     },
+    
+    getAcademicResults: async () => {
+        try {
+            const response = await api.get("/v1/student/academic-results");
+            return response.data.data;
+        } catch (error) {
+            console.error("Lỗi khi lấy kết quả học tập:", error);
+            throw error;
+        }
+    },
+    
+    getAverageGPA: async () => {
+        try {
+            const response = await api.get("/v1/student/average-gpa");
+            return response.data.data;
+        } catch (error) {
+            console.error("Lỗi khi lấy GPA trung bình:", error);
+            throw error;
+        }
+    },
+
     uploadAvatar: (formData) =>
-        axios.put("/api/v1/student/profile?avatar", formData, {
+        api.put("/v1/student/profile?avatar", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
@@ -64,8 +101,6 @@ const profileApi = {
             throw error;
         }
     },
-
-
 };
 
 export default profileApi;

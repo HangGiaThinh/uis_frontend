@@ -55,6 +55,31 @@ const announcementApi = {
         }
     },
 
+    updateAnnouncement: async (id, announcementData, attachment) => {
+        try {
+            const formData = new FormData();
+            formData.append("title", announcementData.title);
+            formData.append("content", announcementData.content);
+            if (attachment) {
+                formData.append("attachment", attachment);
+            }
+            const response = await api.put(`/v1/department/announcements/${id}`, formData, {
+                headers: { 
+                    // Axios sẽ tự động set 'Content-Type': 'multipart/form-data' với boundary phù hợp
+                    // Không set Content-Type ở đây để tránh lỗi 415
+                },
+            });
+            return response.data.data;
+        } catch (error) {
+            console.error("Lỗi khi cập nhật thông báo:", {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message,
+            });
+            throw error;
+        }
+    },
+
     deleteAnnouncement: async (id) => {
         try {
             const response = await api.delete(`/v1/department/announcements/${id}`);

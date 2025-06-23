@@ -1,0 +1,154 @@
+lấy thông tin sinh viên
+GET: http://localhost:8080/api/v1/student/profile
+
+Authorization
+Bearer Token
+Token
+<token>
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy thông tin sinh viên",
+    "data": {
+        "studentId": "N22DCVT076",
+        "lastName": "Nguyễn Văn",
+        "firstName": "Quang",
+        "dateOfBirth": "2004-04-18",
+        "gender": true,
+        "phoneNumber": "0123456789",
+        "citizenId": "123412341234",
+        "universityEmail": "delta27182@gmail.com",
+        "personalEmail": "nva@gmail.com",
+        "imagePath": null,
+        "hometown": null,
+        "address": null,
+        "permanentAddress": null,
+        "ethnicity": null,
+        "status": true,
+        "studentAccount": {
+            "id": 2,
+            "username": "N22DCVT076"
+        },
+        "studentMajor": {
+            "id": "CNPM",
+            "name": "Công nghệ phần mềm"
+        },
+        "studentClass": {
+            "id": "E22CQCN02",
+            "educationLevel": "CLC",
+            "academicYear": "2022-2027"
+        },
+        "studentFaculty": {
+            "id": "CNTT",
+            "name": "Công nghệ Thông tin"
+        }
+    }
+}
+----------------------------------------------------------------
+	AVATAR
+	imagePath				CHỈNH SỬA
+
+Thông tin cá nhân				Thông tin khóa hoc
+"studentId": "N22DCVT076",			Lớp
+"lastName": "Nguyễn Văn",			Ngành
+"firstName": "Quang",				Khoa
+"dateOfBirth": "2004-04-18",			Bậc hệ đào tạo
+"gender": true,					Niên khoa
+"phoneNumber": "0123456789",
+"citizenId": "123412341234",
+"universityEmail": "delta27182@gmail.com",
+"personalEmail": "nva@gmail.com",
+"hometown": null,
+"address": null,
+"permanentAddress": null,
+"ethnicity": null,
+"status": true,
+
+Bảng kết quả học tập
+            GPA tổng
+-----------------------------------------------------------------
+api chỉnh sửa/cập nhật thông tin cá nhân cho chỉnh những thông tin sau
+PUT: http://localhost:8080/api/v1/student/profile
+
+Authorization
+Bearer Token
+Token
+<token>
+
+Body
+raw (json)
+
+{
+    "studentId": "N22DCVT076",
+    "lastName": "Nguyễn Văn",
+    "firstName": "Quang",
+    "dateOfBirth": "2004-04-18",
+    "gender": true,
+    "phoneNumber": "0123456789",
+    "citizenId": "123412341234",
+    "universityEmail": "nvq@student.ptithcm.edu.vn",
+    "personalEmail": "nva@gmail.com",
+    "imagePath": null,
+    "hometown": null,
+    "address": null,
+    "permanentAddress": null,
+    "ethnicity": null
+}
+
+api kết quả học tập
+GET: http://localhost:8080/api/v1/student/academic-results
+
+Authorization
+Bearer Token
+Token
+<token>
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy kết quả học tập của sinh viên",
+    "data": [
+        {
+            "studentId": "N22DCVT093",
+            "semesterOrder": 1,
+            "semesterYear": "2022-2023",
+            "gpa": 2.8
+        },
+        {
+            "studentId": "N22DCVT093",
+            "semesterOrder": 2,
+            "semesterYear": "2022-2023",
+            "gpa": 2.91
+        },
+        {
+            "studentId": "N22DCVT093",
+            "semesterOrder": 1,
+            "semesterYear": "2023-2024",
+            "gpa": 3.2
+        },
+        {
+            "studentId": "N22DCVT093",
+            "semesterOrder": 2,
+            "semesterYear": "2023-2024",
+            "gpa": 2.7
+        }
+    ]
+}
+
+api lấy gpa tổng
+GET: http://localhost:8080/api/v1/student/average-gpa
+
+Authorization
+Bearer Token
+Token
+<token>
+
+{
+    "status_code": 200,
+    "error": null,
+    "details": null,
+    "message": "Lấy điểm trung bình GPA của sinh viên",
+    "data": 2.9
+}

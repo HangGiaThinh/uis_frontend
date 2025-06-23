@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import trainingScoreApi from '../../services/trainingscore/trainingScoreApi';
 import StatisticsModal from './StatisticsModal';
+import { FaSearch } from 'react-icons/fa';
 
 const STATUS_MAP = {
   WAIT_STUDENT: { label: 'Chờ sinh viên', color: 'bg-yellow-100 text-yellow-800 border-yellow-400' },
@@ -22,6 +23,26 @@ const CLASSIFY_MAP = {
   POOR: { label: 'Kém', color: 'bg-red-100 text-red-800 border-red-400' },
 };
 
+const CLASSIFICATION_OPTIONS = [
+  { value: '', label: 'Tất cả xếp loại' },
+  { value: 'EXCELLENT', label: 'Xuất sắc' },
+  { value: 'GOOD', label: 'Giỏi' },
+  { value: 'FAIR', label: 'Khá' },
+  { value: 'AVERAGE', label: 'Trung bình' },
+  { value: 'WEAK', label: 'Yếu' },
+  { value: 'POOR', label: 'Kém' }
+];
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'WAIT_STUDENT', label: 'Chờ sinh viên' },
+  { value: 'WAIT_CLASS_COMMITTEE', label: 'Chờ ban cán sự' },
+  { value: 'WAIT_ADVISOR', label: 'Chờ CVHT' },
+  { value: 'WAIT_FACULTY', label: 'Chờ khoa' },
+  { value: 'WAIT_DEPARTMENT', label: 'Chờ phòng CTSV' },
+  { value: 'COMPLETED', label: 'Hoàn thành' }
+];
+
 function TrainingScoreTable() {
   const [semesters, setSemesters] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState('');
@@ -33,6 +54,14 @@ function TrainingScoreTable() {
   const [statistics, setStatistics] = useState(null);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState({
+    studentId: '',
+    studentName: '',
+    totalScore: '',
+    classification: '',
+    status: ''
+  });
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     trainingScoreApi.getSemesters().then(res => {
@@ -72,6 +101,31 @@ function TrainingScoreTable() {
       }
     }
   };
+
+  const handleSearchChange = (field, value) => {
+    setSearchTerm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSearch = () => {
+    setIsSearching(true);
+    // Thực hiện tìm kiếm
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 500);
+  };
+
+  const filteredTrainingScores = scores.filter(score => {
+    const matchesStudentId = score.student_id?.toLowerCase().includes(searchTerm.studentId.toLowerCase());
+    const matchesStudentName = `${score.student_first_name} ${score.student_last_name}`.toLowerCase().includes(searchTerm.studentName.toLowerCase());
+    const matchesTotalScore = score.total_score?.toString().includes(searchTerm.totalScore);
+    const matchesClassification = score.classification?.toLowerCase().includes(searchTerm.classification.toLowerCase());
+    const matchesStatus = score.status?.toLowerCase().includes(searchTerm.status.toLowerCase());
+
+    return matchesStudentId && matchesStudentName && matchesTotalScore && matchesClassification && matchesStatus;
+  });
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-[#40ACE9]">
@@ -120,6 +174,73 @@ function TrainingScoreTable() {
           </button>
         )}
       </div>
+
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 flex-grow">
+          <div>
+            <input
+              type="text"
+              placeholder="Tìm theo mã sinh viên"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm.studentId}
+              onChange={(e) => handleSearchChange('studentId', e.target.value)}
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Tìm theo tên sinh viên"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm.studentName}
+              onChange={(e) => handleSearchChange('studentName', e.target.value)}
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Tìm theo tổng điểm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm.totalScore}
+              onChange={(e) => handleSearchChange('totalScore', e.target.value)}
+            />
+          </div>
+          <div>
+            <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm.classification}
+              onChange={(e) => handleSearchChange('classification', e.target.value)}
+            >
+              {CLASSIFICATION_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm.status}
+              onChange={(e) => handleSearchChange('status', e.target.value)}
+            >
+              {STATUS_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <button
+          onClick={handleSearch}
+          className="flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors whitespace-nowrap"
+          disabled={isSearching}
+        >
+          <FaSearch className="mr-2" />
+          {isSearching ? 'Đang tìm...' : 'Tìm kiếm'}
+        </button>
+      </div>
+
       {selectedSemester && (
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full border text-center rounded-lg overflow-hidden">
@@ -139,12 +260,12 @@ function TrainingScoreTable() {
                 <tr>
                   <td colSpan={7} className="py-4">Đang tải...</td>
                 </tr>
-              ) : scores.length === 0 ? (
+              ) : filteredTrainingScores.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-4">Không có dữ liệu</td>
                 </tr>
               ) : (
-                scores.map((item, idx) => (
+                filteredTrainingScores.map((item, idx) => (
                   <tr key={item.training_score_id}>
                     <td className="border px-2 py-1">{idx + 1}</td>
                     <td className="border px-2 py-1">{item.student_id}</td>

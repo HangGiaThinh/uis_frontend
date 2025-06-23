@@ -27,12 +27,11 @@ import ResetPasswordPage from "./features/user/pages/ResetPasswordPage";
 import ChangePasswordPage from "./features/student/pages/profile/ChangePasswordPage";
 import ComplaintPage from "./features/student/pages/complaint/ComplaintPage";
 import ComplaintDetailPage from "./features/student/pages/complaint/ComplaintDetailPage";
-import CreateComplaintForm from "./features/student/components/complaint/CreateComplaintForm";
+import CreateComplaintPage from "./features/student/pages/complaint/CreateComplaintPage";
 import AccountManagementPage from "./features/department/pages/account/AccountManagementPage";
 import ComplaintManagementPage from "./features/department/pages/complaint/ComplaintManagementPage";
 import DepartmentComplaintDetailPage from "./features/department/pages/complaint/ComplaintDetailPage";
 import AnnouncementManagementPage from "./features/department/pages/announcement/AnnouncementManagementPage";
-import DepartmentAnnouncementDetailPage from "./features/department/pages/announcement/AnnouncementDetailPage";
 
 function App() {
   return (
@@ -101,7 +100,7 @@ function App() {
           >
             <Route path="/complaints" element={<ComplaintPage />} />
             <Route path="/complaints/:id" element={<ComplaintDetailPage />} />
-            <Route path="/complaints/create" element={<CreateComplaintForm />} />
+            <Route path="/complaints/create" element={<CreateComplaintPage />} />
           </Route>
           <Route
             path="/advisor/training-scores"
@@ -205,7 +204,7 @@ function App() {
             path="/announcements/manage/:id"
             element={
               <ProtectedRoute allowedRoles={["EMPLOYEE_DEPARTMENT"]}>
-                <DepartmentAnnouncementDetailPage />
+                <AnnouncementDetailPage />
               </ProtectedRoute>
             }
           />

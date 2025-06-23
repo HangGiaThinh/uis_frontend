@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
-import { FaPaperPlane, FaCheck, FaArrowLeft } from 'react-icons/fa';
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { FaPaperPlane, FaCheck, FaArrowLeft} from 'react-icons/fa';
 
 const ScoreDetailPage = () => {
   const { id } = useParams();
